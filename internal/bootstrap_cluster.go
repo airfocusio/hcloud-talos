@@ -27,7 +27,8 @@ type BootstrapClusterCommand struct {
 	Location              string
 	NetworkZone           string
 	Token                 string
-	SkipFirewall          bool
+	NoFirewall            bool
+	NoKubespan            bool
 	Force                 bool
 	ApplyManifestsCommand ApplyManifestsCommand
 }
@@ -39,7 +40,8 @@ func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")
 	flags.StringVar(&cmd.Location, "location", "nbg1", "")
 	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
-	flags.BoolVar(&cmd.SkipFirewall, "skip-firewall", false, "")
+	flags.BoolVar(&cmd.NoFirewall, "no-firewall", false, "")
+	flags.BoolVar(&cmd.NoKubespan, "no-kubespan", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 	cmd.ApplyManifestsCommand.RegisterOpts(flags)
 }
@@ -96,14 +98,14 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	if !cmd.SkipFirewall {
+	if !cmd.NoFirewall {
 		_, err = clients.HcloudEnsureFirewall(cl, nodeFirewallTemplate(cl, network), true)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = clients.TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String())
+	_, err = clients.TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String(), !cmd.NoKubespan)
 	if err != nil {
 		return err
 	}

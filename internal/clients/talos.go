@@ -14,8 +14,17 @@ var (
 	talosConfigPatch string
 )
 
-func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP string) (string, error) {
-	output1, err := talosCmdRaw(cl.Dir, "gen", "config", clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP), "--additional-sans", controlplaneIP, "--config-patch", talosConfigPatch)
+func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP string, withKubespan bool) (string, error) {
+	args := []string{
+		"gen", "config",
+		clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP),
+		"--additional-sans", controlplaneIP,
+		"--config-patch", talosConfigPatch,
+	}
+	if withKubespan {
+		args = append(args, "--with-kubespan")
+	}
+	output1, err := talosCmdRaw(cl.Dir, args...)
 	if err != nil {
 		return output1, err
 	}

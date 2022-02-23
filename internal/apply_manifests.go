@@ -27,13 +27,13 @@ func (cmdId *ApplyManifestsCommandId) Create() Command {
 }
 
 type ApplyManifestsCommand struct {
-	SkipHcloudCloudControllerManager bool
-	SkipHcloudCsiDriver              bool
+	NoHcloudCloudControllerManager bool
+	NoHcloudCsiDriver              bool
 }
 
 func (cmd *ApplyManifestsCommand) RegisterOpts(flags *flag.FlagSet) {
-	flags.BoolVar(&cmd.SkipHcloudCloudControllerManager, "skip-hcloud-cloud-controller-manager", false, "")
-	flags.BoolVar(&cmd.SkipHcloudCsiDriver, "skip-hcloud-csi-driver", false, "")
+	flags.BoolVar(&cmd.NoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
+	flags.BoolVar(&cmd.NoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
 }
 
 func (cmd *ApplyManifestsCommand) ValidateOpts() error {
@@ -82,10 +82,10 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 	}
 
 	manifestsConcatenated := [][]byte{}
-	if !cmd.SkipHcloudCloudControllerManager {
+	if !cmd.NoHcloudCloudControllerManager {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCloudControllerManagerManifest))
 	}
-	if !cmd.SkipHcloudCsiDriver {
+	if !cmd.NoHcloudCsiDriver {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCsiDriverManifest))
 	}
 
