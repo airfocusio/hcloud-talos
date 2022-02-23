@@ -15,6 +15,7 @@ func Execute(version FullVersion) error {
 	commandIds := []internal.CommandId{
 		&VersionCommandId{Version: version},
 		&internal.BootstrapClusterCommandId{},
+		&internal.ReconcilePoolCommandId{},
 		&internal.DestroyClusterCommandId{},
 		&internal.ApplyManifestsCommandId{},
 		&internal.AddNodeCommandId{},

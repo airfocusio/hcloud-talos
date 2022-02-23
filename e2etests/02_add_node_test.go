@@ -10,7 +10,6 @@ import (
 func TestAddNode(t *testing.T) {
 	cmd := internal.AddNodeCommand{
 		ServerType: "cx21",
-		PoolName:   "default",
 		NodeName:   "worker-01",
 	}
 	err := cmd.Run(&logger, clusterDir)

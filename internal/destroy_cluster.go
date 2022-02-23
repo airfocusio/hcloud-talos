@@ -28,9 +28,6 @@ func (cmd *DestroyClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 }
 
 func (cmd *DestroyClusterCommand) ValidateOpts() error {
-	if !cmd.Force {
-		return fmt.Errorf("must be forced")
-	}
 	return nil
 }
 
@@ -39,6 +36,10 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 	err := cl.Load(logger)
 	if err != nil {
 		return err
+	}
+
+	if !cmd.Force {
+		return fmt.Errorf("destroying the cluster must be forced")
 	}
 
 	servers, _, err := cl.Client.Server.List(*cl.Ctx, hcloud.ServerListOpts{

@@ -147,12 +147,16 @@ func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, nam
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
 	}
+	finalizeLabels := map[string]string{roleLabel: "worker"}
+	if pool != "" {
+		finalizeLabels[poolLabel] = pool
+	}
 	return clients.HcloudServerCreateFromImageOpts{
 		Name:           nodeName(cl, name),
 		ServerType:     serverType,
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
-		FinalizeLabels: map[string]string{roleLabel: "worker", poolLabel: pool},
+		FinalizeLabels: finalizeLabels,
 		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v0.14.2/hcloud-amd64.raw.xz",
 	}, nil
 }

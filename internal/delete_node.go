@@ -23,6 +23,7 @@ func (cmdId *DeleteNodeCommandId) Create() Command {
 type DeleteNodeCommand struct {
 	NodeName   string
 	KeepServer bool
+	Force      bool
 }
 
 var _ Command = (*DeleteNodeCommand)(nil)
@@ -30,6 +31,7 @@ var _ Command = (*DeleteNodeCommand)(nil)
 func (cmd *DeleteNodeCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.NodeName, "node-name", "", "")
 	flags.BoolVar(&cmd.KeepServer, "keep-server", false, "")
+	flags.BoolVar(&cmd.Force, "force", false, "")
 }
 
 func (cmd *DeleteNodeCommand) ValidateOpts() error {
@@ -46,6 +48,10 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
+	if !cmd.Force {
+		return fmt.Errorf("deleting a node must be forced")
+	}
+
 	serverName := nodeName(cl, cmd.NodeName)
 	server, _, err := cl.Client.Server.Get(*cl.Ctx, serverName)
 	if err != nil {
@@ -58,7 +64,6 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return fmt.Errorf("server %q private IP could not be determined", serverName)
 	}
 	serverIP := server.PrivateNet[0].IP
-	fmt.Printf("serverIP %v\n", serverIP)
 
 	err = utils.Retry(cl.Logger, func() error {
 		_, err := clients.TalosReset(cl, serverIP.String())

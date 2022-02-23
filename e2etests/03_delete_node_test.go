@@ -10,6 +10,7 @@ import (
 func TestDeleteNode(t *testing.T) {
 	cmd := internal.DeleteNodeCommand{
 		NodeName: "worker-01",
+		Force:    true,
 	}
 	err := cmd.Run(&logger, clusterDir)
 	assert.NoError(t, err)

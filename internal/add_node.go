@@ -31,7 +31,7 @@ var _ Command = (*AddNodeCommand)(nil)
 func (cmd *AddNodeCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.BoolVar(&cmd.Controlplane, "controlplane", false, "")
 	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")
-	flags.StringVar(&cmd.PoolName, "pool-name", "default", "")
+	flags.StringVar(&cmd.PoolName, "pool-name", "", "")
 	flags.StringVar(&cmd.NodeName, "node-name", "", "")
 }
 
