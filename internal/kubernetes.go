@@ -18,6 +18,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var metadataAccessor = apimeta.NewAccessor()
+
 func KubernetesListNodes(ctx *Context) (*v1.NodeList, error) {
 	clientset, _, err := kubernetesInit(ctx)
 	if err != nil {
@@ -46,7 +48,7 @@ func KubernetesCreateFromManifest(ctx *Context, namespace string, manifest strin
 	if err != nil {
 		return err
 	}
-	err = kubernetesCreateObject(clientset, *config, namespace, obj)
+	err = kubernetesCreateObject(clientset, *config, obj)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
@@ -69,7 +71,7 @@ func kubernetesInit(ctx *Context) (*kubernetes.Clientset, *rest.Config, error) {
 	return clientset, config, nil
 }
 
-func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, namespace string, obj runtime.Object) error {
+func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, obj runtime.Object) error {
 	// Create a REST mapper that tracks information about the available resources in the cluster.
 	groupResources, err := restmapper.GetAPIGroupResources(kubeClientset.Discovery())
 	if err != nil {
@@ -92,6 +94,12 @@ func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.
 
 	// Create a client specifically for creating the object.
 	restClient, err := kubernetesNewRestClient(restConfig, mapping.GroupVersionKind.GroupVersion())
+	if err != nil {
+		return err
+	}
+
+	// Detect namespace
+	namespace, err := metadataAccessor.Namespace(obj)
 	if err != nil {
 		return err
 	}
