@@ -4,19 +4,37 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime/debug"
+	"sort"
+	"strings"
 
 	"github.com/airfocusio/hcloud-talos/internal/cmds"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
-func Execute(logger *utils.Logger, version FullVersion) error {
+func Execute(version FullVersion) error {
+	commandIds := []cmds.CommandId{
+		&VersionCommandId{Version: version},
+		&cmds.BootstrapClusterCommandId{},
+		&cmds.DestroyClusterCommandId{},
+		&cmds.ApplyManifestsCommandId{},
+		&cmds.AddNodeCommandId{},
+	}
+
+	availableCommands := []string{}
+	for _, commandId := range commandIds {
+		availableCommands = append(availableCommands, commandId.Name())
+	}
+	sort.Strings(availableCommands)
+
 	dir := ""
+	verbose := false
 	flags := flag.NewFlagSet("root", flag.ContinueOnError)
 	flags.StringVar(&dir, "dir", "", "")
+	flags.BoolVar(&verbose, "verbose", false, "")
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		return err
 	}
+	logger := utils.NewLogger(verbose)
 	if dir == "" {
 		dirOut, err := os.Getwd()
 		if err != nil {
@@ -32,31 +50,22 @@ func Execute(logger *utils.Logger, version FullVersion) error {
 		commandArgs = flags.Args()[1:]
 	}
 
-	switch command {
-	case "version":
-		os.Stdout.Write([]byte(version.Version))
-		return nil
-	case "bootstrap-cluster":
-		cmd := cmds.BootstrapClusterCommand{}
-		return RunCommand(logger, &cmd, commandArgs, dir)
-	case "destroy-cluster":
-		cmd := cmds.DestroyClusterCommand{}
-		return RunCommand(logger, &cmd, commandArgs, dir)
-	case "apply-manifests":
-		cmd := cmds.ApplyManifestsCommand{}
-		return RunCommand(logger, &cmd, commandArgs, dir)
-	case "add-node":
-		cmd := cmds.AddNodeCommand{}
-		return RunCommand(logger, &cmd, commandArgs, dir)
-	case "":
-		err := fmt.Errorf("unknown command %s", command)
-		os.Stderr.Write([]byte(err.Error()))
-		return err
-	default:
-		err := fmt.Errorf("unknown command %s", command)
-		os.Stderr.Write([]byte(err.Error()))
+	if command == "" {
+		err := fmt.Errorf("missing command: available commands are %s", strings.Join(availableCommands, ", "))
+		os.Stderr.Write([]byte(err.Error() + "\n"))
 		return err
 	}
+
+	for _, commandId := range commandIds {
+		if commandId.Name() == command {
+			cmd := commandId.Create()
+			return RunCommand(&logger, cmd, commandArgs, dir)
+		}
+	}
+
+	err := fmt.Errorf("unknown command %s: available commands are %s", command, strings.Join(availableCommands, ", "))
+	os.Stderr.Write([]byte(err.Error() + "\n"))
+	return err
 }
 
 func RunCommand(logger *utils.Logger, cmd cmds.Command, args []string, dir string) error {
@@ -69,34 +78,11 @@ func RunCommand(logger *utils.Logger, cmd cmds.Command, args []string, dir strin
 		logger.Error.Printf("%v\n", err)
 		return err
 	}
+	logger.Debug.Printf("Starting\n")
 	if err := cmd.Run(logger, dir); err != nil {
 		logger.Error.Printf("%v\n", err)
 		return err
 	}
-	logger.Info.Printf("Done\n")
+	logger.Debug.Printf("Done\n")
 	return nil
-}
-
-type FullVersion struct {
-	Version string
-	Commit  string
-	Date    string
-	BuiltBy string
-}
-
-func (v FullVersion) ToString() string {
-	result := v.Version
-	if v.Commit != "" {
-		result = fmt.Sprintf("%s\ncommit: %s", result, v.Commit)
-	}
-	if v.Date != "" {
-		result = fmt.Sprintf("%s\nbuilt at: %s", result, v.Date)
-	}
-	if v.BuiltBy != "" {
-		result = fmt.Sprintf("%s\nbuilt by: %s", result, v.BuiltBy)
-	}
-	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
-		result = fmt.Sprintf("%s\nmodule version: %s, checksum: %s", result, info.Main.Version, info.Main.Sum)
-	}
-	return result
 }

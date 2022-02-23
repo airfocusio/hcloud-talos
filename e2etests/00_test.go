@@ -12,7 +12,7 @@ import (
 var clusterName = ""
 var clusterDir = ""
 var hcloudToken = ""
-var logger utils.Logger = utils.NewLogger()
+var logger utils.Logger = utils.NewLogger(true)
 
 func TestMain(t *testing.M) {
 	setup()

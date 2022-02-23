@@ -1,19 +1,5 @@
 .PHONY: *
 
-run-bootstrap-cluster:
-	mkdir -p test
-	cd test && go run .. bootstrap-cluster --cluster-name=cluster --node-name=controlplane-01 --force
-
-run-destroy-cluster:
-	mkdir -p test
-	cd test && go run .. destroy-cluster --force
-
-run-apply-manifests:
-	cd test && go run .. apply-manifests
-
-run-add-node:
-	cd test && go run .. add-node --node-name=worker-01
-
 test:
 	go test -v ./...
 

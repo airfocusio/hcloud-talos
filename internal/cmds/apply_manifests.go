@@ -15,12 +15,20 @@ var (
 	hcloudCsiDriverManifestTmpl string
 )
 
+type ApplyManifestsCommandId struct{}
+
+func (cmdId *ApplyManifestsCommandId) Name() string {
+	return "apply-manifests"
+}
+
+func (cmdId *ApplyManifestsCommandId) Create() Command {
+	return &ApplyManifestsCommand{}
+}
+
 type ApplyManifestsCommand struct {
 	SkipHcloudCloudControllerManager bool
 	SkipHcloudCsiDriver              bool
 }
-
-var _ Command = (*ApplyManifestsCommand)(nil)
 
 func (cmd *ApplyManifestsCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.BoolVar(&cmd.SkipHcloudCloudControllerManager, "skip-hcloud-cloud-controller-manager", false, "")

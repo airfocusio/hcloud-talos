@@ -9,6 +9,16 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
+type AddNodeCommandId struct{}
+
+func (cmdId *AddNodeCommandId) Name() string {
+	return "add-node"
+}
+
+func (cmdId *AddNodeCommandId) Create() Command {
+	return &AddNodeCommand{}
+}
+
 type AddNodeCommand struct {
 	NodeName       string
 	NodeServerType string

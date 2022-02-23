@@ -6,6 +6,11 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
+type CommandId interface {
+	Name() string
+	Create() Command
+}
+
 type Command interface {
 	RegisterOpts(flags *flag.FlagSet)
 	ValidateOpts() error

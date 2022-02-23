@@ -31,3 +31,10 @@ hcloud-talos bootstrap-cluster --cluster-name=my-cluster --node-name=controlplan
 hcloud-talos add-node --cluster-name=cluster --node-name=controlplane-02 --controlplane
 hcloud-talos add-node --node-name=worker-01
 ```
+
+## Development
+
+```bash
+export HCLOUD_TOKEN=...
+go run . --dir=test --verbose command [args]
+```

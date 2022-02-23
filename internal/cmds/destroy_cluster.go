@@ -9,11 +9,19 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
+type DestroyClusterCommandId struct{}
+
+func (cmdId *DestroyClusterCommandId) Name() string {
+	return "destroy-cluster"
+}
+
+func (cmdId *DestroyClusterCommandId) Create() Command {
+	return &DestroyClusterCommand{}
+}
+
 type DestroyClusterCommand struct {
 	Force bool
 }
-
-var _ Command = (*DestroyClusterCommand)(nil)
 
 func (cmd *DestroyClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.BoolVar(&cmd.Force, "force", false, "")
@@ -42,6 +50,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, server := range servers {
+		ctx.Logger.Info.Printf("Deleting server %d\n", server.ID)
 		err := utils.Retry(ctx.Logger, func() error {
 			_, err := ctx.Client.Server.Delete(*ctx.Ctx, server)
 			return err
@@ -60,6 +69,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, firewall := range firewalls {
+		ctx.Logger.Info.Printf("Deleting firewall %d\n", firewall.ID)
 		err := utils.Retry(ctx.Logger, func() error {
 			_, err := ctx.Client.Firewall.Delete(*ctx.Ctx, firewall)
 			return err
@@ -78,6 +88,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, loadBalancer := range loadBalancers {
+		ctx.Logger.Info.Printf("Deleting load balancer %d\n", loadBalancer.ID)
 		err := utils.Retry(ctx.Logger, func() error {
 			_, err := ctx.Client.LoadBalancer.Delete(*ctx.Ctx, loadBalancer)
 			return err
@@ -96,6 +107,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, placementGroup := range placementGroups {
+		ctx.Logger.Info.Printf("Deleting placement group %d\n", placementGroup.ID)
 		err := utils.Retry(ctx.Logger, func() error {
 			_, err := ctx.Client.PlacementGroup.Delete(*ctx.Ctx, placementGroup)
 			return err
@@ -114,6 +126,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, network := range networks {
+		ctx.Logger.Info.Printf("Deleting network %d\n", network.ID)
 		err := utils.Retry(ctx.Logger, func() error {
 			_, err := ctx.Client.Network.Delete(*ctx.Ctx, network)
 			return err

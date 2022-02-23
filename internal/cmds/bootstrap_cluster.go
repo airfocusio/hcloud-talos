@@ -9,6 +9,16 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
+type BootstrapClusterCommandId struct{}
+
+func (cmdId *BootstrapClusterCommandId) Name() string {
+	return "bootstrap-cluster"
+}
+
+func (cmdId *BootstrapClusterCommandId) Create() Command {
+	return &BootstrapClusterCommand{}
+}
+
 type BootstrapClusterCommand struct {
 	ClusterName           string
 	NodeName              string
@@ -21,8 +31,6 @@ type BootstrapClusterCommand struct {
 	Force                 bool
 	ApplyManifestsCommand ApplyManifestsCommand
 }
-
-var _ Command = (*BootstrapClusterCommand)(nil)
 
 func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	cmd.Token = os.Getenv("HCLOUD_TOKEN")

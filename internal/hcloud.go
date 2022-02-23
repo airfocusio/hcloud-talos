@@ -22,7 +22,6 @@ func HcloudEnsureNetwork(ctx *Context) (*hcloud.Network, error) {
 		return nil, err
 	}
 	if network != nil {
-		ctx.Logger.Info.Printf("Reusing existing network %d\n", network.ID)
 		return network, nil
 	}
 
@@ -55,7 +54,6 @@ func HcloudEnsurePlacementGroup(ctx *Context) (*hcloud.PlacementGroup, error) {
 		return nil, err
 	}
 	if placementGroup != nil {
-		ctx.Logger.Info.Printf("Reusing existing placement group %d\n", placementGroup.ID)
 		return placementGroup, nil
 	}
 
@@ -122,7 +120,6 @@ func HcloudEnsureLoadBalancer(ctx *Context, network *hcloud.Network, name string
 		return nil, err
 	}
 	if loadBalancer != nil {
-		ctx.Logger.Info.Printf("Reusing existing load balancer %d\n", loadBalancer.ID)
 		return loadBalancer, nil
 	}
 
@@ -194,7 +191,6 @@ func HcloudEnsureFirewall(ctx *Context) (*hcloud.Firewall, error) {
 		return nil, err
 	}
 	if firewall != nil {
-		ctx.Logger.Info.Printf("Reusing existing firewall %d\n", firewall.ID)
 		return firewall, nil
 	}
 
