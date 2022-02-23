@@ -58,6 +58,7 @@ func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
 	if err != nil {
 		return err
 	}
+	logger.Info.Printf("Reconciling pool %s/%s\n", cl.Config.ClusterName, cmd.PoolName)
 
 	for {
 		poolServers, _, err := cl.Client.Server.List(*cl.Ctx, hcloud.ServerListOpts{
@@ -75,7 +76,6 @@ func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
 			if err != nil {
 				return err
 			}
-			logger.Debug.Printf("Adding node %q to pool %q\n", nodeName, cmd.PoolName)
 			cmd := AddNodeCommand{
 				ServerType: cmd.ServerType,
 				NodeName:   nodeName,
@@ -87,7 +87,6 @@ func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
 			}
 		} else if nodeCountDiff > 0 {
 			server := poolServers[len(poolServers)-1]
-			logger.Debug.Printf("Deleting node %q from pool %q\n", server.Name, cmd.PoolName)
 			cmd := DeleteNodeCommand{
 				NodeName: strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
 				Force:    cmd.Force,
@@ -97,7 +96,7 @@ func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
 				return err
 			}
 		} else {
-			logger.Debug.Printf("Pool %q already has %d of %d nodes\n", cmd.PoolName, len(poolServers), cmd.NodeCount)
+			logger.Debug.Printf("Pool %s/%s already has %d of %d nodes\n", cl.Config.ClusterName, cmd.PoolName, len(poolServers), cmd.NodeCount)
 			break
 		}
 	}

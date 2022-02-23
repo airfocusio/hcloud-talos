@@ -79,6 +79,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	if err != nil {
 		return err
 	}
+	logger.Info.Printf("Bootstrapping cluster %s\n", cl.Config.ClusterName)
 
 	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), true)
 	if err != nil {

@@ -47,6 +47,7 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 	if err != nil {
 		return err
 	}
+	logger.Info.Printf("Deleting node %s/%s\n", cl.Config.ClusterName, cmd.NodeName)
 
 	if !cmd.Force {
 		return fmt.Errorf("deleting a node must be forced")

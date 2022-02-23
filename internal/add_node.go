@@ -51,6 +51,7 @@ func (cmd *AddNodeCommand) Run(logger *utils.Logger, dir string) error {
 	if err != nil {
 		return err
 	}
+	logger.Info.Printf("Adding node %s/%s (%s)\n", cl.Config.ClusterName, cmd.NodeName, cmd.PoolName)
 
 	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), false)
 	if err != nil {

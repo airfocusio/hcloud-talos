@@ -37,6 +37,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 	if err != nil {
 		return err
 	}
+	logger.Info.Printf("Destroying cluster %q\n", cl.Config.ClusterName)
 
 	if !cmd.Force {
 		return fmt.Errorf("destroying the cluster must be forced")
