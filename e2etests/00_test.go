@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/airfocusio/hcloud-talos/internal/cmds"
+	"github.com/airfocusio/hcloud-talos/internal"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
@@ -45,7 +45,7 @@ func setup() {
 func cleanup() {
 	fmt.Printf("cleanup\n")
 
-	cmd := cmds.DestroyClusterCommand{Force: true}
+	cmd := internal.DestroyClusterCommand{Force: true}
 	err := cmd.Run(&logger, clusterDir)
 	if err != nil {
 		fmt.Printf("unable to destroy cluster: %v\n", err)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/airfocusio/hcloud-talos/internal/cmds"
+	"github.com/airfocusio/hcloud-talos/internal"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
@@ -18,7 +18,7 @@ func (cmdId *VersionCommandId) Name() string {
 	return "version"
 }
 
-func (cmdId *VersionCommandId) Create() cmds.Command {
+func (cmdId *VersionCommandId) Create() internal.Command {
 	return &VersionCommand{Version: cmdId.Version}
 }
 

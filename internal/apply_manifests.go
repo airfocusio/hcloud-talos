@@ -1,10 +1,11 @@
-package cmds
+package internal
 
 import (
 	_ "embed"
 	"flag"
 
-	"github.com/airfocusio/hcloud-talos/internal"
+	"github.com/airfocusio/hcloud-talos/internal/clients"
+	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
@@ -40,13 +41,13 @@ func (cmd *ApplyManifestsCommand) ValidateOpts() error {
 }
 
 func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
-	ctx := &internal.Context{Dir: dir}
-	err := ctx.Load(logger)
+	cl := &cluster.Cluster{Dir: dir}
+	err := cl.Load(logger)
 	if err != nil {
 		return err
 	}
 
-	network, err := internal.HcloudEnsureNetwork(ctx)
+	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), false)
 	if err != nil {
 		return err
 	}
@@ -54,7 +55,7 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 	hcloudCloudControllerManagerImage := "hetznercloud/hcloud-cloud-controller-manager:v1.9.1"
 	hcloudCloudControllerManagerManifest, err := utils.RenderTemplate(hcloudCloudControllerManagerManifestTmpl, map[string]interface{}{
 		"Secret": map[string]interface{}{
-			"Token":   ctx.Config.Hcloud.Token,
+			"Token":   cl.Config.Hcloud.Token,
 			"Network": network.Name,
 		},
 		"CloudControllerManager": map[string]interface{}{
@@ -69,7 +70,7 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 	hcloudCsiDriverImage := "hetznercloud/hcloud-csi-driver:1.6.0"
 	hcloudCsiDriverManifest, err := utils.RenderTemplate(hcloudCsiDriverManifestTmpl, map[string]interface{}{
 		"Secret": map[string]interface{}{
-			"Token": ctx.Config.Hcloud.Token,
+			"Token": cl.Config.Hcloud.Token,
 		},
 		"CsiDriver": map[string]interface{}{
 			"Image":           hcloudCsiDriverImage,
@@ -93,8 +94,8 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 	for _, manifest := range manifests {
-		err = utils.Retry(ctx.Logger, func() error {
-			return internal.KubernetesCreateFromManifest(ctx, "kube-system", string(manifest))
+		err = utils.Retry(cl.Logger, func() error {
+			return clients.KubernetesCreateFromManifest(cl, "kube-system", string(manifest))
 		})
 		if err != nil {
 			return err

@@ -7,17 +7,17 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/airfocusio/hcloud-talos/internal/cmds"
+	"github.com/airfocusio/hcloud-talos/internal"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
 func Execute(version FullVersion) error {
-	commandIds := []cmds.CommandId{
+	commandIds := []internal.CommandId{
 		&VersionCommandId{Version: version},
-		&cmds.BootstrapClusterCommandId{},
-		&cmds.DestroyClusterCommandId{},
-		&cmds.ApplyManifestsCommandId{},
-		&cmds.AddNodeCommandId{},
+		&internal.BootstrapClusterCommandId{},
+		&internal.DestroyClusterCommandId{},
+		&internal.ApplyManifestsCommandId{},
+		&internal.AddNodeCommandId{},
 	}
 
 	availableCommands := []string{}
@@ -68,7 +68,7 @@ func Execute(version FullVersion) error {
 	return err
 }
 
-func RunCommand(logger *utils.Logger, cmd cmds.Command, args []string, dir string) error {
+func RunCommand(logger *utils.Logger, cmd internal.Command, args []string, dir string) error {
 	flags := flag.NewFlagSet("command", flag.ContinueOnError)
 	cmd.RegisterOpts(flags)
 	if err := flags.Parse(args); err != nil {

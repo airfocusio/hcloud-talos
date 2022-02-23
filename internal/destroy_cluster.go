@@ -1,10 +1,10 @@
-package cmds
+package internal
 
 import (
 	"flag"
 	"fmt"
 
-	"github.com/airfocusio/hcloud-talos/internal"
+	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -35,24 +35,24 @@ func (cmd *DestroyClusterCommand) ValidateOpts() error {
 }
 
 func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
-	ctx := &internal.Context{Dir: dir}
-	err := ctx.Load(logger)
+	cl := &cluster.Cluster{Dir: dir}
+	err := cl.Load(logger)
 	if err != nil {
 		return err
 	}
 
-	servers, _, err := ctx.Client.Server.List(*ctx.Ctx, hcloud.ServerListOpts{
+	servers, _, err := cl.Client.Server.List(*cl.Ctx, hcloud.ServerListOpts{
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: internal.HcloudMarkerLabel + "=" + ctx.Config.ClusterName,
+			LabelSelector: clusterLabel + "=" + cl.Config.ClusterName,
 		},
 	})
 	if err != nil {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, server := range servers {
-		ctx.Logger.Info.Printf("Deleting server %d\n", server.ID)
-		err := utils.Retry(ctx.Logger, func() error {
-			_, err := ctx.Client.Server.Delete(*ctx.Ctx, server)
+		cl.Logger.Info.Printf("Deleting server %d\n", server.ID)
+		err := utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.Server.Delete(*cl.Ctx, server)
 			return err
 		})
 		if err != nil {
@@ -60,18 +60,18 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		}
 	}
 
-	firewalls, _, err := ctx.Client.Firewall.List(*ctx.Ctx, hcloud.FirewallListOpts{
+	firewalls, _, err := cl.Client.Firewall.List(*cl.Ctx, hcloud.FirewallListOpts{
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: internal.HcloudMarkerLabel + "=" + ctx.Config.ClusterName,
+			LabelSelector: clusterLabel + "=" + cl.Config.ClusterName,
 		},
 	})
 	if err != nil {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, firewall := range firewalls {
-		ctx.Logger.Info.Printf("Deleting firewall %d\n", firewall.ID)
-		err := utils.Retry(ctx.Logger, func() error {
-			_, err := ctx.Client.Firewall.Delete(*ctx.Ctx, firewall)
+		cl.Logger.Info.Printf("Deleting firewall %d\n", firewall.ID)
+		err := utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.Firewall.Delete(*cl.Ctx, firewall)
 			return err
 		})
 		if err != nil {
@@ -79,18 +79,18 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		}
 	}
 
-	loadBalancers, _, err := ctx.Client.LoadBalancer.List(*ctx.Ctx, hcloud.LoadBalancerListOpts{
+	loadBalancers, _, err := cl.Client.LoadBalancer.List(*cl.Ctx, hcloud.LoadBalancerListOpts{
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: internal.HcloudMarkerLabel + "=" + ctx.Config.ClusterName,
+			LabelSelector: clusterLabel + "=" + cl.Config.ClusterName,
 		},
 	})
 	if err != nil {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, loadBalancer := range loadBalancers {
-		ctx.Logger.Info.Printf("Deleting load balancer %d\n", loadBalancer.ID)
-		err := utils.Retry(ctx.Logger, func() error {
-			_, err := ctx.Client.LoadBalancer.Delete(*ctx.Ctx, loadBalancer)
+		cl.Logger.Info.Printf("Deleting load balancer %d\n", loadBalancer.ID)
+		err := utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.LoadBalancer.Delete(*cl.Ctx, loadBalancer)
 			return err
 		})
 		if err != nil {
@@ -98,18 +98,18 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		}
 	}
 
-	placementGroups, _, err := ctx.Client.PlacementGroup.List(*ctx.Ctx, hcloud.PlacementGroupListOpts{
+	placementGroups, _, err := cl.Client.PlacementGroup.List(*cl.Ctx, hcloud.PlacementGroupListOpts{
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: internal.HcloudMarkerLabel + "=" + ctx.Config.ClusterName,
+			LabelSelector: clusterLabel + "=" + cl.Config.ClusterName,
 		},
 	})
 	if err != nil {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, placementGroup := range placementGroups {
-		ctx.Logger.Info.Printf("Deleting placement group %d\n", placementGroup.ID)
-		err := utils.Retry(ctx.Logger, func() error {
-			_, err := ctx.Client.PlacementGroup.Delete(*ctx.Ctx, placementGroup)
+		cl.Logger.Info.Printf("Deleting placement group %d\n", placementGroup.ID)
+		err := utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.PlacementGroup.Delete(*cl.Ctx, placementGroup)
 			return err
 		})
 		if err != nil {
@@ -117,18 +117,18 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 		}
 	}
 
-	networks, _, err := ctx.Client.Network.List(*ctx.Ctx, hcloud.NetworkListOpts{
+	networks, _, err := cl.Client.Network.List(*cl.Ctx, hcloud.NetworkListOpts{
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: internal.HcloudMarkerLabel + "=" + ctx.Config.ClusterName,
+			LabelSelector: clusterLabel + "=" + cl.Config.ClusterName,
 		},
 	})
 	if err != nil {
 		logger.Warn.Printf("Error: %v\n", err)
 	}
 	for _, network := range networks {
-		ctx.Logger.Info.Printf("Deleting network %d\n", network.ID)
-		err := utils.Retry(ctx.Logger, func() error {
-			_, err := ctx.Client.Network.Delete(*ctx.Ctx, network)
+		cl.Logger.Info.Printf("Deleting network %d\n", network.ID)
+		err := utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.Network.Delete(*cl.Ctx, network)
 			return err
 		})
 		if err != nil {

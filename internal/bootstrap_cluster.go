@@ -1,13 +1,13 @@
-package cmds
+package internal
 
 import (
 	"flag"
 	"fmt"
 	"os"
 
-	"github.com/airfocusio/hcloud-talos/internal"
+	"github.com/airfocusio/hcloud-talos/internal/clients"
+	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
-	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 type BootstrapClusterCommandId struct{}
@@ -23,7 +23,7 @@ func (cmdId *BootstrapClusterCommandId) Create() Command {
 type BootstrapClusterCommand struct {
 	ClusterName           string
 	NodeName              string
-	NodeServerType        string
+	ServerType            string
 	Location              string
 	NetworkZone           string
 	Token                 string
@@ -36,7 +36,7 @@ func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	cmd.Token = os.Getenv("HCLOUD_TOKEN")
 	flags.StringVar(&cmd.ClusterName, "cluster-name", "", "")
 	flags.StringVar(&cmd.NodeName, "node-name", "", "")
-	flags.StringVar(&cmd.NodeServerType, "node-server-type", "cx21", "")
+	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")
 	flags.StringVar(&cmd.Location, "location", "nbg1", "")
 	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
 	flags.BoolVar(&cmd.SkipFirewall, "skip-firewall", false, "")
@@ -51,7 +51,7 @@ func (cmd *BootstrapClusterCommand) ValidateOpts() error {
 	if cmd.NodeName == "" {
 		return fmt.Errorf("node name must not be empty")
 	}
-	if cmd.NodeServerType == "" {
+	if cmd.ServerType == "" {
 		return fmt.Errorf("node server type must not be empty")
 	}
 	if cmd.Location == "" {
@@ -70,80 +70,69 @@ func (cmd *BootstrapClusterCommand) ValidateOpts() error {
 }
 
 func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error {
-	ctx := &internal.Context{Dir: dir}
-	err := ctx.Create(logger, cmd.ClusterName, cmd.Location, cmd.NetworkZone, cmd.Token, cmd.Force)
+	cl := &cluster.Cluster{Dir: dir}
+	err := cl.Create(logger, cmd.ClusterName, cmd.Location, cmd.NetworkZone, cmd.Token, cmd.Force)
 	if err != nil {
 		return err
 	}
-	err = ctx.Save()
-	if err != nil {
-		return err
-	}
-
-	network, err := internal.HcloudEnsureNetwork(ctx)
+	err = cl.Save()
 	if err != nil {
 		return err
 	}
 
-	placementGroup, err := internal.HcloudEnsurePlacementGroup(ctx)
+	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), true)
 	if err != nil {
 		return err
 	}
 
-	kubernetesApiServerPort := 6443
-	talosApiServerPort := 50000
-	controlplaneLoadBalancerName := ctx.Config.ClusterName + "-controlplane"
-	controlplaneLoadBalancerServices := []hcloud.LoadBalancerCreateOptsService{
-		{
-			ListenPort:      &kubernetesApiServerPort,
-			DestinationPort: &kubernetesApiServerPort,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-		},
-		{
-			ListenPort:      &talosApiServerPort,
-			DestinationPort: &talosApiServerPort,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-		},
+	placementGroup, err := clients.HcloudEnsurePlacementGroup(cl, nodePlacementGroupTemplate(cl), true)
+	if err != nil {
+		return err
 	}
-	controlplaneLoadBalancer, err := internal.HcloudEnsureLoadBalancer(ctx, network, controlplaneLoadBalancerName, controlplaneLoadBalancerServices, "controlplane")
+
+	controlplaneLoadBalancer, err := clients.HcloudEnsureLoadBalancer(cl, network, controlPlaneLoadBalanacerTemplate(cl, network), true)
 	if err != nil {
 		return err
 	}
 
 	if !cmd.SkipFirewall {
-		_, err = internal.HcloudEnsureFirewall(ctx)
+		_, err = clients.HcloudEnsureFirewall(cl, nodeFirewallTemplate(cl, network), true)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = internal.TalosGenConfig(ctx, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String())
+	err = clients.TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String())
 	if err != nil {
 		return err
 	}
 
-	controlplaneServer, err := internal.TalosCreateControlplane(ctx, network, placementGroup, cmd.NodeName, cmd.NodeServerType)
+	controlPlaneNodeTemplate, err := controlPlaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
+	if err != nil {
+		return err
+	}
+	controlplaneServer, err := clients.HcloudCreateServerFromImage(cl, network, placementGroup, controlPlaneNodeTemplate)
 	if err != nil {
 		return err
 	}
 	controlplaneServerPrivateIP := controlplaneServer.PrivateNet[0].IP
 
 	err = utils.RetrySlow(logger, func() error {
-		return internal.TalosBootstrap(ctx, controlplaneServerPrivateIP.String())
+		return clients.TalosBootstrap(cl, controlplaneServerPrivateIP.String())
 	})
 	if err != nil {
 		return err
 	}
 
 	err = utils.Retry(logger, func() error {
-		return internal.TalosKubeconfig(ctx, controlplaneServerPrivateIP.String())
+		return clients.TalosKubeconfig(cl, controlplaneServerPrivateIP.String())
 	})
 	if err != nil {
 		return err
 	}
 
 	err = utils.RetrySlow(logger, func() error {
-		nodes, err := internal.KubernetesListNodes(ctx)
+		nodes, err := clients.KubernetesListNodes(cl)
 		if err != nil {
 			return err
 		}

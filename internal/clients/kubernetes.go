@@ -1,8 +1,9 @@
-package internal
+package clients
 
 import (
 	"path"
 
+	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -20,20 +21,20 @@ import (
 
 var metadataAccessor = apimeta.NewAccessor()
 
-func KubernetesListNodes(ctx *Context) (*v1.NodeList, error) {
-	clientset, _, err := kubernetesInit(ctx)
+func KubernetesListNodes(cl *cluster.Cluster) (*v1.NodeList, error) {
+	clientset, _, err := kubernetesInit(cl)
 	if err != nil {
 		return nil, err
 	}
-	nodes, err := clientset.CoreV1().Nodes().List(*ctx.Ctx, metav1.ListOptions{})
+	nodes, err := clientset.CoreV1().Nodes().List(*cl.Ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return nodes, nil
 }
 
-func KubernetesCreateFromManifest(ctx *Context, namespace string, manifest string) error {
-	clientset, config, err := kubernetesInit(ctx)
+func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifest string) error {
+	clientset, config, err := kubernetesInit(cl)
 	if err != nil {
 		return err
 	}
@@ -56,8 +57,8 @@ func KubernetesCreateFromManifest(ctx *Context, namespace string, manifest strin
 	return nil
 }
 
-func kubernetesInit(ctx *Context) (*kubernetes.Clientset, *rest.Config, error) {
-	kubeconfigFile := path.Join(ctx.Dir, "kubeconfig")
+func kubernetesInit(cl *cluster.Cluster) (*kubernetes.Clientset, *rest.Config, error) {
+	kubeconfigFile := path.Join(cl.Dir, "kubeconfig")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFile)
 	if err != nil {
 		return nil, nil, err
