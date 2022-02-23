@@ -66,7 +66,7 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 
 	logger.Debug.Printf("Resetting talos\n")
 	err = utils.Retry(cl.Logger, func() error {
-		_, err := clients.TalosReset(cl, serverIP.String())
+		_, err := TalosReset(cl, serverIP.String())
 		return err
 	})
 	if err != nil {

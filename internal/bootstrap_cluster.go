@@ -105,7 +105,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		}
 	}
 
-	_, err = clients.TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String(), !cmd.NoKubespan)
+	_, err = TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String(), !cmd.NoKubespan)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	controlplaneServerPrivateIP := controlplaneServer.PrivateNet[0].IP
 
 	err = utils.RetrySlow(logger, func() error {
-		_, err := clients.TalosBootstrap(cl, controlplaneServerPrivateIP.String())
+		_, err := TalosBootstrap(cl, controlplaneServerPrivateIP.String())
 		return err
 	})
 	if err != nil {
@@ -129,7 +129,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	}
 
 	err = utils.Retry(logger, func() error {
-		_, err := clients.TalosKubeconfig(cl, controlplaneServerPrivateIP.String())
+		_, err := TalosKubeconfig(cl, controlplaneServerPrivateIP.String())
 		return err
 	})
 	if err != nil {

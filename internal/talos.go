@@ -1,4 +1,4 @@
-package clients
+package internal
 
 import (
 	_ "embed"
@@ -20,6 +20,7 @@ func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP stri
 		clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP),
 		"--additional-sans", controlplaneIP,
 		"--config-patch", talosConfigPatch,
+		"--kubernetes-version", kubernetesVersion,
 	}
 	if withKubespan {
 		args = append(args, "--with-kubespan")

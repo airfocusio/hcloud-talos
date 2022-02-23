@@ -138,7 +138,7 @@ func controlPlaneNodeTemplate(cl *cluster.Cluster, serverType string, name strin
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: map[string]string{roleLabel: "controlplane"},
-		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v0.14.2/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
 	}, nil
 }
 
@@ -157,6 +157,6 @@ func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, nam
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: finalizeLabels,
-		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v0.14.2/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
 	}, nil
 }
