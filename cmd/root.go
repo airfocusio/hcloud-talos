@@ -18,6 +18,7 @@ func Execute(version FullVersion) error {
 		&internal.DestroyClusterCommandId{},
 		&internal.ApplyManifestsCommandId{},
 		&internal.AddNodeCommandId{},
+		&internal.DeleteNodeCommandId{},
 	}
 
 	availableCommands := []string{}

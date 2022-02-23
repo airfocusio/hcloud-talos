@@ -123,13 +123,17 @@ func nodeFirewallTemplate(cl *cluster.Cluster, network *hcloud.Network) hcloud.F
 	}
 }
 
+func nodeName(cl *cluster.Cluster, name string) string {
+	return cl.Config.ClusterName + "-" + name
+}
+
 func controlPlaneNodeTemplate(cl *cluster.Cluster, serverType string, name string) (clients.HcloudServerCreateFromImageOpts, error) {
 	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "controlplane.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
 	}
 	return clients.HcloudServerCreateFromImageOpts{
-		Name:           cl.Config.ClusterName + "-" + name,
+		Name:           nodeName(cl, name),
 		ServerType:     serverType,
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
@@ -144,7 +148,7 @@ func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, nam
 		return clients.HcloudServerCreateFromImageOpts{}, err
 	}
 	return clients.HcloudServerCreateFromImageOpts{
-		Name:           cl.Config.ClusterName + "-" + name,
+		Name:           nodeName(cl, name),
 		ServerType:     serverType,
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},

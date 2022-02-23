@@ -80,7 +80,7 @@ func HcloudEnsureLoadBalancer(cl *cluster.Cluster, network *hcloud.Network, tmpl
 		if err != nil {
 			return err
 		}
-		if loadBalancer.PublicNet.IPv4.IP == nil {
+		if loadBalancer.PublicNet.IPv4.IP.IsUnspecified() {
 			return fmt.Errorf("load balancer does not yet have a public IP")
 		}
 		return nil
@@ -94,7 +94,7 @@ func HcloudEnsureLoadBalancer(cl *cluster.Cluster, network *hcloud.Network, tmpl
 		if err != nil {
 			return err
 		}
-		if tmpl.Network != nil && (len(loadBalancer.PrivateNet) == 0 || loadBalancer.PrivateNet[0].IP == nil) {
+		if tmpl.Network != nil && (len(loadBalancer.PrivateNet) == 0 || loadBalancer.PrivateNet[0].IP.IsUnspecified()) {
 			return fmt.Errorf("load balancer does not yet have a private IP")
 		}
 		return nil
@@ -225,7 +225,7 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 		if err != nil {
 			return err
 		}
-		if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP == nil {
+		if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP.IsUnspecified() {
 			return fmt.Errorf("server does not yet have a private IP")
 		}
 		return nil

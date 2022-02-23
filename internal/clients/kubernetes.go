@@ -2,6 +2,7 @@ package clients
 
 import (
 	"path"
+	"time"
 
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	v1 "k8s.io/api/core/v1"
@@ -51,6 +52,23 @@ func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifes
 	}
 	err = kubernetesCreateObject(clientset, *config, obj)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
+		return err
+	}
+
+	return nil
+}
+
+func KubernetesDeleteNode(cl *cluster.Cluster, name string) error {
+	clientset, _, err := kubernetesInit(cl)
+	if err != nil {
+		return err
+	}
+
+	gracePeriodSeconds := int64(time.Minute.Seconds())
+	err = clientset.CoreV1().Nodes().Delete(*cl.Ctx, name, metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+	})
+	if err != nil && !apierrors.IsNotFound(err) {
 		return err
 	}
 

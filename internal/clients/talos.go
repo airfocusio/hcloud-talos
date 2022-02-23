@@ -14,30 +14,41 @@ var (
 	talosConfigPatch string
 )
 
-func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP string) error {
-	if err := talosCmd(cl.Dir, "gen", "config", clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP), "--additional-sans", controlplaneIP, "--config-patch", talosConfigPatch); err != nil {
-		return err
+func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP string) (string, error) {
+	output1, err := talosCmdRaw(cl.Dir, "gen", "config", clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP), "--additional-sans", controlplaneIP, "--config-patch", talosConfigPatch)
+	if err != nil {
+		return output1, err
 	}
-	if err := talosCmd(cl.Dir, "--talosconfig", "talosconfig", "config", "endpoint", controlplaneIP); err != nil {
-		return err
+	output2, err := talosCmd(cl, "config", "endpoint", controlplaneIP)
+	if err != nil {
+		return output1 + output2, err
 	}
-	return nil
+	return output1 + output2, nil
 }
 
-func TalosBootstrap(cl *cluster.Cluster, serverIP string) error {
-	return talosCmd(cl.Dir, "--talosconfig", "talosconfig", "-n", serverIP, "bootstrap")
+func TalosBootstrap(cl *cluster.Cluster, serverIP string) (string, error) {
+	return talosCmd(cl, "-n", serverIP, "bootstrap")
 }
 
-func TalosKubeconfig(cl *cluster.Cluster, serverIP string) error {
-	return talosCmd(cl.Dir, "--talosconfig", "talosconfig", "-n", serverIP, "kubeconfig", ".")
+func TalosKubeconfig(cl *cluster.Cluster, serverIP string) (string, error) {
+	return talosCmd(cl, "-n", serverIP, "kubeconfig", ".")
 }
 
-func talosCmd(dir string, args ...string) error {
+func TalosReset(cl *cluster.Cluster, serverIP string) (string, error) {
+	return talosCmd(cl, "-n", serverIP, "reset")
+}
+
+func talosCmd(cl *cluster.Cluster, args ...string) (string, error) {
+	fullArgs := append([]string{"--talosconfig", "talosconfig"}, args...)
+	return talosCmdRaw(cl.Dir, fullArgs...)
+}
+
+func talosCmdRaw(dir string, args ...string) (string, error) {
 	cmd := exec.Command("talosctl", args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("talos command %s failed: %w\n%s", strings.Join(args, " "), err, output)
+		return "", fmt.Errorf("talos command %s failed: %w\n%s", strings.Join(args, " "), err, output)
 	}
-	return nil
+	return string(output), nil
 }
