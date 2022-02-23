@@ -8,6 +8,8 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
+	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
 type BootstrapClusterCommandId struct{}
@@ -93,7 +95,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	controlplaneLoadBalancer, err := clients.HcloudEnsureLoadBalancer(cl, network, controlPlaneLoadBalanacerTemplate(cl, network), true)
+	controlplaneLoadBalancer, err := clients.HcloudEnsureLoadBalancer(cl, network, controlplaneLoadBalanacerTemplate(cl, network), true)
 	if err != nil {
 		return err
 	}
@@ -105,23 +107,23 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		}
 	}
 
-	_, err = TalosGenConfig(cl, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP.String(), !cmd.NoKubespan)
+	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.NoKubespan)
 	if err != nil {
 		return err
 	}
 
-	controlPlaneNodeTemplate, err := controlPlaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
+	controlplaneNodeTemplate, err := controlplaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
 	if err != nil {
 		return err
 	}
-	controlplaneServer, err := clients.HcloudCreateServerFromImage(cl, network, placementGroup, controlPlaneNodeTemplate)
+	controlplaneServer, err := clients.HcloudCreateServerFromImage(cl, network, placementGroup, controlplaneNodeTemplate)
 	if err != nil {
 		return err
 	}
 	controlplaneServerPrivateIP := controlplaneServer.PrivateNet[0].IP
 
 	err = utils.RetrySlow(logger, func() error {
-		_, err := TalosBootstrap(cl, controlplaneServerPrivateIP.String())
+		_, err := TalosBootstrap(cl, controlplaneServerPrivateIP)
 		return err
 	})
 	if err != nil {
@@ -129,7 +131,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	}
 
 	err = utils.Retry(logger, func() error {
-		_, err := TalosKubeconfig(cl, controlplaneServerPrivateIP.String())
+		_, err := TalosKubeconfig(cl, controlplaneServerPrivateIP)
 		return err
 	})
 	if err != nil {
@@ -151,6 +153,26 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	if err != nil {
 		return err
 	}
+
+	err = utils.RetrySlow(logger, func() error {
+		kubeClientset, _, err := clients.KubernetesInit(cl)
+		if err != nil {
+			return err
+		}
+		_, err = kubeClientset.AppsV1().DaemonSets("kube-system").Patch(*cl.Ctx, "kube-flannel", k8stypes.JSONPatchType, []byte(`
+			[
+				{
+					"op": "add",
+					"path": "/spec/template/spec/containers/0/args/-",
+					"value": "--iface=eth1"
+				}
+			]
+		`), k8smetav1.PatchOptions{})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	applyManifestsCommand := ApplyManifestsCommand{}
 	err = applyManifestsCommand.Run(logger, dir)

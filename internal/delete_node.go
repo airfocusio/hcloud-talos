@@ -3,6 +3,7 @@ package internal
 import (
 	"flag"
 	"fmt"
+	"net"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
@@ -59,14 +60,14 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 	if server == nil {
 		return fmt.Errorf("server %q could not be found", serverName)
 	}
-	if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP.IsUnspecified() {
+	if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP.Equal(net.IP{}) {
 		return fmt.Errorf("server %q private IP could not be determined", serverName)
 	}
 	serverIP := server.PrivateNet[0].IP
 
 	logger.Debug.Printf("Resetting talos\n")
 	err = utils.Retry(cl.Logger, func() error {
-		_, err := TalosReset(cl, serverIP.String())
+		_, err := TalosReset(cl, serverIP)
 		return err
 	})
 	if err != nil {

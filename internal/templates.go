@@ -42,7 +42,7 @@ func nodePlacementGroupTemplate(cl *cluster.Cluster) hcloud.PlacementGroupCreate
 	}
 }
 
-func controlPlaneLoadBalanacerTemplate(cl *cluster.Cluster, network *hcloud.Network) hcloud.LoadBalancerCreateOpts {
+func controlplaneLoadBalanacerTemplate(cl *cluster.Cluster, network *hcloud.Network) hcloud.LoadBalancerCreateOpts {
 	kubernetesApiServerPort := 6443
 	talosApiServerPort := 50000
 	usePrivateIP := true
@@ -127,7 +127,7 @@ func nodeName(cl *cluster.Cluster, name string) string {
 	return cl.Config.ClusterName + "-" + name
 }
 
-func controlPlaneNodeTemplate(cl *cluster.Cluster, serverType string, name string) (clients.HcloudServerCreateFromImageOpts, error) {
+func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name string) (clients.HcloudServerCreateFromImageOpts, error) {
 	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "controlplane.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err

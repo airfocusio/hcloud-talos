@@ -75,26 +75,16 @@ func HcloudEnsureLoadBalancer(cl *cluster.Cluster, network *hcloud.Network, tmpl
 	}
 	loadBalancer = loadBalancerResult.LoadBalancer
 
+	cl.Logger.Debug.Printf("Waiting for load balancer to aquire IPs\n")
 	err = utils.Retry(cl.Logger, func() error {
 		loadBalancer, _, err = cl.Client.LoadBalancer.GetByID(*cl.Ctx, loadBalancer.ID)
 		if err != nil {
 			return err
 		}
-		if loadBalancer.PublicNet.IPv4.IP.IsUnspecified() {
+		if !loadBalancer.PublicNet.Enabled || loadBalancer.PublicNet.IPv4.IP.Equal(net.IP{}) {
 			return fmt.Errorf("load balancer does not yet have a public IP")
 		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = utils.Retry(cl.Logger, func() error {
-		loadBalancer, _, err = cl.Client.LoadBalancer.GetByID(*cl.Ctx, loadBalancer.ID)
-		if err != nil {
-			return err
-		}
-		if tmpl.Network != nil && (len(loadBalancer.PrivateNet) == 0 || loadBalancer.PrivateNet[0].IP.IsUnspecified()) {
+		if tmpl.Network != nil && (len(loadBalancer.PrivateNet) == 0 || loadBalancer.PrivateNet[0].IP.Equal(net.IP{})) {
 			return fmt.Errorf("load balancer does not yet have a private IP")
 		}
 		return nil
@@ -102,7 +92,9 @@ func HcloudEnsureLoadBalancer(cl *cluster.Cluster, network *hcloud.Network, tmpl
 	if err != nil {
 		return nil, err
 	}
+	cl.Logger.Debug.Printf("Load balancer IPs are %v and %v\n", loadBalancer.PublicNet.IPv4.IP, loadBalancer.PrivateNet[0].IP)
 
+	cl.Logger.Debug.Printf("Applying load balancer targers\n")
 	for _, target := range targets {
 		err := utils.Retry(cl.Logger, func() error {
 			switch target.Type {
@@ -218,14 +210,17 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 		return nil, err
 	}
 
-	cl.Logger.Debug.Printf("Waiting for server to have private IP\n")
+	cl.Logger.Debug.Printf("Waiting for server to aquire IPs\n")
 	server := serverRespone.Server
 	err = utils.Retry(cl.Logger, func() error {
 		server, _, err = cl.Client.Server.GetByID(*cl.Ctx, server.ID)
 		if err != nil {
 			return err
 		}
-		if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP.IsUnspecified() {
+		if server.PublicNet.IPv4.IP.Equal(net.IP{}) {
+			return fmt.Errorf("server does not yet have a public IP")
+		}
+		if len(server.PrivateNet) == 0 || server.PrivateNet[0].IP.Equal(net.IP{}) {
 			return fmt.Errorf("server does not yet have a private IP")
 		}
 		return nil
@@ -233,6 +228,7 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 	if err != nil {
 		return nil, err
 	}
+	cl.Logger.Debug.Printf("Server IPs are %v and %v\n", server.PublicNet.IPv4.IP, server.PrivateNet[0].IP)
 
 	cl.Logger.Debug.Printf("Starting server in rescue mode\n")
 	err = utils.Retry(cl.Logger, func() error {

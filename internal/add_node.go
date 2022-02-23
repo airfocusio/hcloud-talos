@@ -65,7 +65,7 @@ func (cmd *AddNodeCommand) Run(logger *utils.Logger, dir string) error {
 
 	var nodeTemplate clients.HcloudServerCreateFromImageOpts
 	if cmd.Controlplane {
-		nodeTemplate, err = controlPlaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
+		nodeTemplate, err = controlplaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
 		if err != nil {
 			return err
 		}

@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -23,7 +24,7 @@ import (
 var metadataAccessor = apimeta.NewAccessor()
 
 func KubernetesListNodes(cl *cluster.Cluster) (*v1.NodeList, error) {
-	clientset, _, err := kubernetesInit(cl)
+	clientset, _, err := KubernetesInit(cl)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func KubernetesListNodes(cl *cluster.Cluster) (*v1.NodeList, error) {
 }
 
 func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifest string) error {
-	clientset, config, err := kubernetesInit(cl)
+	clientset, config, err := KubernetesInit(cl)
 	if err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifes
 	if err != nil {
 		return err
 	}
-	err = kubernetesCreateObject(clientset, *config, obj)
+	err = KubernetesCreateObject(clientset, *config, obj)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
@@ -59,7 +60,7 @@ func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifes
 }
 
 func KubernetesDeleteNode(cl *cluster.Cluster, name string) error {
-	clientset, _, err := kubernetesInit(cl)
+	clientset, _, err := KubernetesInit(cl)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func KubernetesDeleteNode(cl *cluster.Cluster, name string) error {
 	return nil
 }
 
-func kubernetesInit(cl *cluster.Cluster) (*kubernetes.Clientset, *rest.Config, error) {
+func KubernetesInit(cl *cluster.Cluster) (*kubernetes.Clientset, *rest.Config, error) {
 	kubeconfigFile := path.Join(cl.Dir, "kubeconfig")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFile)
 	if err != nil {
@@ -90,7 +91,7 @@ func kubernetesInit(cl *cluster.Cluster) (*kubernetes.Clientset, *rest.Config, e
 	return clientset, config, nil
 }
 
-func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, obj runtime.Object) error {
+func KubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, obj runtime.Object) error {
 	// Create a REST mapper that tracks information about the available resources in the cluster.
 	groupResources, err := restmapper.GetAPIGroupResources(kubeClientset.Discovery())
 	if err != nil {
@@ -127,6 +128,26 @@ func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.
 	restHelper := resource.NewHelper(restClient, mapping)
 	_, err = restHelper.Create(namespace, false, obj)
 	return err
+}
+
+func KubernetesPatchFlannelDaemonSet(cl *cluster.Cluster) error {
+	kubeClientset, _, err := KubernetesInit(cl)
+	if err != nil {
+		return err
+	}
+	_, err = kubeClientset.AppsV1().DaemonSets("kube-system").Patch(*cl.Ctx, "kube-flannel", types.JSONPatchType, []byte(`
+		[
+			{
+				"op": "add",
+				"path": "/spec/template/spec/containers/0/args/-",
+				"value": "--iface=eth1"
+			}
+		]
+	`), metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func kubernetesNewRestClient(restConfig rest.Config, gv schema.GroupVersion) (rest.Interface, error) {

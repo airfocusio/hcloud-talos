@@ -5,7 +5,7 @@
 This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered [Kubernetes](https://kubernetes.io/) clustes on the [Hetzner Cloud](https://www.hetzner.com/cloud).
 
 * `bootstrap-cluster`
-    * Create a private network `10.0.0.0/8` for inter-node communication
+    * Create a private network `10.0.0.0/16` for inter-node communication
     * Create a placement group to ensure nodes to not run on the same physical machine
     * Create a firewall rule
     * Create a load balancer to access the controlplane nodes via Kubernetes API server (port `6443`) or Talos API server (port `50000`)

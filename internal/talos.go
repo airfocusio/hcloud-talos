@@ -3,22 +3,31 @@ package internal
 import (
 	_ "embed"
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
+	"github.com/airfocusio/hcloud-talos/internal/utils"
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 var (
-	//go:embed talos_config_patch.json
-	talosConfigPatch string
+	//go:embed talos_config_patch.json.tmpl
+	talosConfigPatchTmpl string
 )
 
-func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP string, withKubespan bool) (string, error) {
+func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, withKubespan bool) (string, error) {
+	talosConfigPatch, err := utils.RenderTemplate(talosConfigPatchTmpl, map[string]string{
+		"NetworkIPRange": network.IPRange.String(),
+	})
+	if err != nil {
+		return "", err
+	}
 	args := []string{
 		"gen", "config",
-		clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP),
-		"--additional-sans", controlplaneIP,
+		clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP.String()),
+		"--additional-sans", controlplaneIP.String(),
 		"--config-patch", talosConfigPatch,
 		"--kubernetes-version", kubernetesVersion,
 	}
@@ -29,23 +38,23 @@ func TalosGenConfig(cl *cluster.Cluster, clusterName string, controlplaneIP stri
 	if err != nil {
 		return output1, err
 	}
-	output2, err := talosCmd(cl, "config", "endpoint", controlplaneIP)
+	output2, err := talosCmd(cl, "config", "endpoint", controlplaneIP.String())
 	if err != nil {
 		return output1 + output2, err
 	}
 	return output1 + output2, nil
 }
 
-func TalosBootstrap(cl *cluster.Cluster, serverIP string) (string, error) {
-	return talosCmd(cl, "-n", serverIP, "bootstrap")
+func TalosBootstrap(cl *cluster.Cluster, serverIP net.IP) (string, error) {
+	return talosCmd(cl, "-n", serverIP.String(), "bootstrap")
 }
 
-func TalosKubeconfig(cl *cluster.Cluster, serverIP string) (string, error) {
-	return talosCmd(cl, "-n", serverIP, "kubeconfig", ".")
+func TalosKubeconfig(cl *cluster.Cluster, serverIP net.IP) (string, error) {
+	return talosCmd(cl, "-n", serverIP.String(), "kubeconfig", ".")
 }
 
-func TalosReset(cl *cluster.Cluster, serverIP string) (string, error) {
-	return talosCmd(cl, "-n", serverIP, "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
+func TalosReset(cl *cluster.Cluster, serverIP net.IP) (string, error) {
+	return talosCmd(cl, "-n", serverIP.String(), "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
 }
 
 func talosCmd(cl *cluster.Cluster, args ...string) (string, error) {
