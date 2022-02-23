@@ -71,49 +71,6 @@ func HcloudEnsurePlacementGroup(ctx *Context) (*hcloud.PlacementGroup, error) {
 	return placementGroup, nil
 }
 
-func HcloudEnsureControlplaneLoadBalancer(ctx *Context, network *hcloud.Network) (*hcloud.LoadBalancer, error) {
-	name := ctx.Config.ClusterName + "-controlplane"
-	kubernetesApiServerPort := 6443
-	talosApiServerPort := 50000
-	services := []hcloud.LoadBalancerCreateOptsService{
-		{
-			ListenPort:      &kubernetesApiServerPort,
-			DestinationPort: &kubernetesApiServerPort,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-		},
-		{
-			ListenPort:      &talosApiServerPort,
-			DestinationPort: &talosApiServerPort,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-		},
-	}
-	return HcloudEnsureLoadBalancer(ctx, network, name, services, "controlplane")
-}
-
-func HcloudEnsureIngressLoadBalancer(ctx *Context, network *hcloud.Network) (*hcloud.LoadBalancer, error) {
-	name := ctx.Config.ClusterName + "-ingress"
-	ingressHttpPortIn := 80
-	ingressHttpPortOut := 30080
-	ingressHttpsPortIn := 443
-	ingressHttpsPortOut := 30433
-	proxyProtocol := true
-	services := []hcloud.LoadBalancerCreateOptsService{
-		{
-			ListenPort:      &ingressHttpPortIn,
-			DestinationPort: &ingressHttpPortOut,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-			Proxyprotocol:   &proxyProtocol,
-		},
-		{
-			ListenPort:      &ingressHttpsPortIn,
-			DestinationPort: &ingressHttpsPortOut,
-			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-			Proxyprotocol:   &proxyProtocol,
-		},
-	}
-	return HcloudEnsureLoadBalancer(ctx, network, name, services, "worker")
-}
-
 func HcloudEnsureLoadBalancer(ctx *Context, network *hcloud.Network, name string, services []hcloud.LoadBalancerCreateOptsService, targetRole string) (*hcloud.LoadBalancer, error) {
 	loadBalancer, _, err := ctx.Client.LoadBalancer.Get(*ctx.Ctx, name)
 	if err != nil {

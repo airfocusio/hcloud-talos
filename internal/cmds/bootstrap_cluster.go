@@ -7,6 +7,7 @@ import (
 
 	"github.com/airfocusio/hcloud-talos/internal"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 type BootstrapClusterCommandId struct{}
@@ -91,13 +92,48 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	controlplaneLoadBalancer, err := internal.HcloudEnsureControlplaneLoadBalancer(ctx, network)
+	kubernetesApiServerPort := 6443
+	talosApiServerPort := 50000
+	controlplaneLoadBalancerName := ctx.Config.ClusterName + "-controlplane"
+	controlplaneLoadBalancerServices := []hcloud.LoadBalancerCreateOptsService{
+		{
+			ListenPort:      &kubernetesApiServerPort,
+			DestinationPort: &kubernetesApiServerPort,
+			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
+		},
+		{
+			ListenPort:      &talosApiServerPort,
+			DestinationPort: &talosApiServerPort,
+			Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
+		},
+	}
+	controlplaneLoadBalancer, err := internal.HcloudEnsureLoadBalancer(ctx, network, controlplaneLoadBalancerName, controlplaneLoadBalancerServices, "controlplane")
 	if err != nil {
 		return err
 	}
 
 	if !cmd.SkipIngress {
-		_, err = internal.HcloudEnsureIngressLoadBalancer(ctx, network)
+		ingressLoadBalancerName := ctx.Config.ClusterName + "-ingress"
+		ingressHttpPortIn := 80
+		ingressHttpPortOut := 30080
+		ingressHttpsPortIn := 443
+		ingressHttpsPortOut := 30433
+		ingressLoadBalancerProxyProtocol := true
+		ingressLoadBalancerServices := []hcloud.LoadBalancerCreateOptsService{
+			{
+				ListenPort:      &ingressHttpPortIn,
+				DestinationPort: &ingressHttpPortOut,
+				Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
+				Proxyprotocol:   &ingressLoadBalancerProxyProtocol,
+			},
+			{
+				ListenPort:      &ingressHttpsPortIn,
+				DestinationPort: &ingressHttpsPortOut,
+				Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
+				Proxyprotocol:   &ingressLoadBalancerProxyProtocol,
+			},
+		}
+		_, err = internal.HcloudEnsureLoadBalancer(ctx, network, ingressLoadBalancerName, ingressLoadBalancerServices, "worker")
 		if err != nil {
 			return err
 		}
