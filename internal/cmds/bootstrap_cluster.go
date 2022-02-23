@@ -27,7 +27,6 @@ type BootstrapClusterCommand struct {
 	Location              string
 	NetworkZone           string
 	Token                 string
-	SkipIngress           bool
 	SkipFirewall          bool
 	Force                 bool
 	ApplyManifestsCommand ApplyManifestsCommand
@@ -40,7 +39,6 @@ func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.NodeServerType, "node-server-type", "cx21", "")
 	flags.StringVar(&cmd.Location, "location", "nbg1", "")
 	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
-	flags.BoolVar(&cmd.SkipIngress, "skip-ingress", false, "")
 	flags.BoolVar(&cmd.SkipFirewall, "skip-firewall", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 	cmd.ApplyManifestsCommand.RegisterOpts(flags)
@@ -110,33 +108,6 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 	controlplaneLoadBalancer, err := internal.HcloudEnsureLoadBalancer(ctx, network, controlplaneLoadBalancerName, controlplaneLoadBalancerServices, "controlplane")
 	if err != nil {
 		return err
-	}
-
-	if !cmd.SkipIngress {
-		ingressLoadBalancerName := ctx.Config.ClusterName + "-ingress"
-		ingressHttpPortIn := 80
-		ingressHttpPortOut := 30080
-		ingressHttpsPortIn := 443
-		ingressHttpsPortOut := 30433
-		ingressLoadBalancerProxyProtocol := true
-		ingressLoadBalancerServices := []hcloud.LoadBalancerCreateOptsService{
-			{
-				ListenPort:      &ingressHttpPortIn,
-				DestinationPort: &ingressHttpPortOut,
-				Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-				Proxyprotocol:   &ingressLoadBalancerProxyProtocol,
-			},
-			{
-				ListenPort:      &ingressHttpsPortIn,
-				DestinationPort: &ingressHttpsPortOut,
-				Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-				Proxyprotocol:   &ingressLoadBalancerProxyProtocol,
-			},
-		}
-		_, err = internal.HcloudEnsureLoadBalancer(ctx, network, ingressLoadBalancerName, ingressLoadBalancerServices, "worker")
-		if err != nil {
-			return err
-		}
 	}
 
 	if !cmd.SkipFirewall {

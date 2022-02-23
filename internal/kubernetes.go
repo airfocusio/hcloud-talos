@@ -30,7 +30,7 @@ func KubernetesListNodes(ctx *Context) (*v1.NodeList, error) {
 	return nodes, nil
 }
 
-func KubernetesCreateFromManifest(ctx *Context, manifest string) error {
+func KubernetesCreateFromManifest(ctx *Context, namespace string, manifest string) error {
 	clientset, config, err := kubernetesInit(ctx)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func KubernetesCreateFromManifest(ctx *Context, manifest string) error {
 	if err != nil {
 		return err
 	}
-	err = kubernetesCreateObject(clientset, *config, obj)
+	err = kubernetesCreateObject(clientset, *config, namespace, obj)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
@@ -69,7 +69,7 @@ func kubernetesInit(ctx *Context) (*kubernetes.Clientset, *rest.Config, error) {
 	return clientset, config, nil
 }
 
-func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, obj runtime.Object) error {
+func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.Config, namespace string, obj runtime.Object) error {
 	// Create a REST mapper that tracks information about the available resources in the cluster.
 	groupResources, err := restmapper.GetAPIGroupResources(kubeClientset.Discovery())
 	if err != nil {
@@ -98,7 +98,7 @@ func kubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.
 
 	// Use the REST helper to create the object in the "default" namespace.
 	restHelper := resource.NewHelper(restClient, mapping)
-	_, err = restHelper.Create("kube-system", false, obj)
+	_, err = restHelper.Create(namespace, false, obj)
 	return err
 }
 

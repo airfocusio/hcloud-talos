@@ -9,7 +9,6 @@ This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered
     * Create a placement group to ensure nodes to not run on the same physical machine
     * Create a firewall that blocks all incoming traffic (except ICMP)
     * Create a load balancer to access the controlplane nodes via Kubernetes API server (port `6443`) or Talos API server (port `50000`)
-    * Create a load balancer to access the nodes ingress (port `80` -> `30080`, `443` -> `30433`) with proxy protocol
     * Create a first controlplane node running Talos
     * Install [Hetzner Cloud Controller Manger](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
     * Install [Hetzner CSI Driver](https://github.com/hetznercloud/csi-driver)

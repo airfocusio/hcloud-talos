@@ -94,7 +94,7 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 	}
 	for _, manifest := range manifests {
 		err = utils.Retry(ctx.Logger, func() error {
-			return internal.KubernetesCreateFromManifest(ctx, string(manifest))
+			return internal.KubernetesCreateFromManifest(ctx, "kube-system", string(manifest))
 		})
 		if err != nil {
 			return err
