@@ -35,7 +35,7 @@ func TalosKubeconfig(cl *cluster.Cluster, serverIP string) (string, error) {
 }
 
 func TalosReset(cl *cluster.Cluster, serverIP string) (string, error) {
-	return talosCmd(cl, "-n", serverIP, "reset")
+	return talosCmd(cl, "-n", serverIP, "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
 }
 
 func talosCmd(cl *cluster.Cluster, args ...string) (string, error) {

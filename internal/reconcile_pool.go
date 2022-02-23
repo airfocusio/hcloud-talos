@@ -76,22 +76,22 @@ func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
 			if err != nil {
 				return err
 			}
-			cmd := AddNodeCommand{
+			innerCmd := AddNodeCommand{
 				ServerType: cmd.ServerType,
 				NodeName:   nodeName,
 				PoolName:   cmd.PoolName,
 			}
-			err = cmd.Run(logger, cl.Dir)
+			err = innerCmd.Run(logger, cl.Dir)
 			if err != nil {
 				return err
 			}
 		} else if nodeCountDiff > 0 {
 			server := poolServers[len(poolServers)-1]
-			cmd := DeleteNodeCommand{
+			innerCmd := DeleteNodeCommand{
 				NodeName: strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
 				Force:    cmd.Force,
 			}
-			err := cmd.Run(logger, cl.Dir)
+			err := innerCmd.Run(logger, cl.Dir)
 			if err != nil {
 				return err
 			}

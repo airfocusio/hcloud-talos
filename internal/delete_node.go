@@ -21,16 +21,14 @@ func (cmdId *DeleteNodeCommandId) Create() Command {
 }
 
 type DeleteNodeCommand struct {
-	NodeName   string
-	KeepServer bool
-	Force      bool
+	NodeName string
+	Force    bool
 }
 
 var _ Command = (*DeleteNodeCommand)(nil)
 
 func (cmd *DeleteNodeCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.NodeName, "node-name", "", "")
-	flags.BoolVar(&cmd.KeepServer, "keep-server", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 }
 
@@ -66,6 +64,7 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 	}
 	serverIP := server.PrivateNet[0].IP
 
+	logger.Debug.Printf("Resetting talos\n")
 	err = utils.Retry(cl.Logger, func() error {
 		_, err := clients.TalosReset(cl, serverIP.String())
 		return err
@@ -74,21 +73,26 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
+	logger.Debug.Printf("Shutting down server\n")
+	err = utils.Retry(cl.Logger, func() error {
+		_, _, err = cl.Client.Server.Shutdown(*cl.Ctx, server)
+		return err
+	})
+	if err != nil {
+		return nil
+	}
 	err = utils.RetrySlow(cl.Logger, func() error {
 		server, _, err := cl.Client.Server.GetByID(*cl.Ctx, server.ID)
 		if err != nil {
 			return err
 		}
-		if server.Status != hcloud.ServerStatusOff {
+		if server != nil && server.Status != hcloud.ServerStatusOff {
 			return fmt.Errorf("server is not yet turned off")
 		}
 		return nil
 	})
 	if err != nil {
-		return err
-	}
-	if err != nil {
-		return err
+		logger.Warn.Printf("Server could not be shut down\n")
 	}
 
 	err = utils.Retry(cl.Logger, func() error {
@@ -99,14 +103,12 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	if !cmd.KeepServer {
-		err = utils.Retry(cl.Logger, func() error {
-			_, err := cl.Client.Server.Delete(*cl.Ctx, server)
-			return err
-		})
-		if err != nil {
-			return err
-		}
+	err = utils.Retry(cl.Logger, func() error {
+		_, err := cl.Client.Server.Delete(*cl.Ctx, server)
+		return err
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil

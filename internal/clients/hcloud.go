@@ -281,16 +281,19 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 	if err != nil {
 		return nil, err
 	}
-	err = utils.Retry(cl.Logger, func() error {
+	err = utils.RetrySlow(cl.Logger, func() error {
 		server, _, err := cl.Client.Server.GetByID(*cl.Ctx, server.ID)
 		if err != nil {
 			return err
 		}
-		if server.Status != hcloud.ServerStatusOff {
+		if server != nil && server.Status != hcloud.ServerStatusOff {
 			return fmt.Errorf("server is not yet turned off")
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	cl.Logger.Debug.Printf("Configuring server labels\n")
 	baseAndFinalizeLabels := map[string]string{}

@@ -7,7 +7,7 @@ This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered
 * `bootstrap-cluster`
     * Create a private network `10.0.0.0/8` for inter-node communication
     * Create a placement group to ensure nodes to not run on the same physical machine
-    * Create a firewall that blocks all incoming traffic (except ICMP)
+    * Create a firewall rule
     * Create a load balancer to access the controlplane nodes via Kubernetes API server (port `6443`) or Talos API server (port `50000`)
     * Create a first controlplane node running Talos
     * Install [Hetzner Cloud Controller Manger](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
