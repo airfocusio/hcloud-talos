@@ -20,11 +20,14 @@ This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered
 ## Usage
 
 ```bash
+# ATTENTION: this folder will contain all crucial files
+# they must be stored somewhere secure!
 mkdir my-cluster
 cd my-cluster
+
 export HCLOUD_TOKEN=...
 # bootstrap cluster
-hcloud-talos bootstrap-cluster --cluster-name=my-cluster --node-name=controlplane-01 --force
+hcloud-talos bootstrap-cluster --cluster-name=my-cluster --node-name=controlplane-01
 
 # add more nodes
 hcloud-talos add-node --cluster-name=cluster --node-name=controlplane-02 --controlplane

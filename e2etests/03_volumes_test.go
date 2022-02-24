@@ -8,6 +8,7 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -30,5 +31,10 @@ func TestVolumes(t *testing.T) {
 	}
 
 	err = clients.KubernetesWaitPodRunning(cl, "test", "test-0")
+	assert.NoError(t, err)
+
+	clientset, _, err := clients.KubernetesInit(cl)
+	assert.NoError(t, err)
+	err = clientset.CoreV1().Namespaces().Delete(*cl.Ctx, "test", v1.DeleteOptions{})
 	assert.NoError(t, err)
 }

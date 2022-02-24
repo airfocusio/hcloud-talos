@@ -7,18 +7,51 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-)
-
-var (
-	//go:embed talos_config_patch.json.tmpl
-	talosConfigPatchTmpl string
+	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
 func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, withKubespan bool) (string, error) {
-	talosConfigPatch, err := utils.RenderTemplate(talosConfigPatchTmpl, map[string]string{
+	configPatch, err := utils.RenderTemplate(`
+		[
+			{
+				"op": "add",
+				"path": "/machine/kubelet/nodeIP",
+				"value": {
+					"validSubnets": [
+						"{{ .NetworkIPRange }}"
+					]
+				}
+			},
+			{
+				"op": "add",
+				"path": "/cluster/externalCloudProvider",
+				"value": {
+					"enabled": true,
+					"manifests": []
+				}
+			},
+			{
+				"op": "add",
+				"path": "/machine/systemDiskEncryption",
+				"value": {
+					"ephemeral": {
+						"provider": "luks2",
+						"keys": [
+							{
+								"slot": 0,
+								"nodeID": {}
+							}
+						]
+					}
+				}
+			}
+		]
+	`, map[string]string{
 		"NetworkIPRange": network.IPRange.String(),
 	})
 	if err != nil {
@@ -28,7 +61,7 @@ func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName st
 		"gen", "config",
 		clusterName, fmt.Sprintf("https://%s:6443", controlplaneIP.String()),
 		"--additional-sans", controlplaneIP.String(),
-		"--config-patch", talosConfigPatch,
+		"--config-patch", configPatch,
 		"--kubernetes-version", kubernetesVersion,
 	}
 	if withKubespan {
@@ -55,6 +88,18 @@ func TalosKubeconfig(cl *cluster.Cluster, serverIP net.IP) (string, error) {
 
 func TalosReset(cl *cluster.Cluster, serverIP net.IP) (string, error) {
 	return talosCmd(cl, "-n", serverIP.String(), "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
+}
+
+func TalosPatchFlannelDaemonSet(cl *cluster.Cluster, jsonPatch string) error {
+	kubeClientset, _, err := clients.KubernetesInit(cl)
+	if err != nil {
+		return err
+	}
+	_, err = kubeClientset.AppsV1().DaemonSets("kube-system").Patch(*cl.Ctx, "kube-flannel", k8stypes.JSONPatchType, []byte(jsonPatch), k8smetav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func talosCmd(cl *cluster.Cluster, args ...string) (string, error) {

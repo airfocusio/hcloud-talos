@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	//go:embed apply_manifests_hcloud_cloud_controller_manager.yaml.tmpl
+	//go:embed apply_manifests_hcloud_cloud_controller_manager.yaml
 	hcloudCloudControllerManagerManifestTmpl string
-	//go:embed apply_manifests_hcloud_csi_driver.yaml.tmpl
+	//go:embed apply_manifests_hcloud_csi_driver.yaml
 	hcloudCsiDriverManifestTmpl string
 )
 

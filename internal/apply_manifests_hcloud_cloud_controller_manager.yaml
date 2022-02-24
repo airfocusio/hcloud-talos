@@ -57,8 +57,8 @@ spec:
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
       containers:
-        - image: {{ .CloudControllerManager.Image }}
-          imagePullPolicy: {{ .CloudControllerManager.ImagePullPolicy }}
+        - image: "{{ .CloudControllerManager.Image }}"
+          imagePullPolicy: "{{ .CloudControllerManager.ImagePullPolicy }}"
           name: hcloud-cloud-controller-manager
           command:
             - "/bin/hcloud-cloud-controller-manager"
@@ -91,5 +91,5 @@ metadata:
   name: hcloud
   namespace: kube-system
 stringData:
-  token: {{ .Secret.Token }}
-  network: {{ .Secret.Network }}
+  token: "{{ .Secret.Token }}"
+  network: "{{ .Secret.Network }}"

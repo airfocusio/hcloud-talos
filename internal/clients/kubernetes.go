@@ -25,18 +25,15 @@ import (
 
 var metadataAccessor = apimeta.NewAccessor()
 
-func KubernetesWaitNodeRunning(cl *cluster.Cluster, name string) error {
+func KubernetesWaitNodeRegistered(cl *cluster.Cluster, name string) error {
 	clientset, _, err := KubernetesInit(cl)
 	if err != nil {
 		return err
 	}
 	return utils.RetrySlow(cl.Logger, func() error {
-		node, err := clientset.CoreV1().Nodes().Get(*cl.Ctx, name, metav1.GetOptions{})
+		_, err := clientset.CoreV1().Nodes().Get(*cl.Ctx, name, metav1.GetOptions{})
 		if err != nil {
 			return err
-		}
-		if node.Status.Phase != v1.NodeRunning {
-			return fmt.Errorf("node not yet running")
 		}
 		return nil
 	})

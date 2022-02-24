@@ -8,8 +8,6 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
-	k8smetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
 type BootstrapClusterCommandId struct{}
@@ -30,7 +28,7 @@ type BootstrapClusterCommand struct {
 	NetworkZone           string
 	Token                 string
 	NoFirewall            bool
-	NoKubespan            bool
+	Kubespan              bool
 	Force                 bool
 	ApplyManifestsCommand ApplyManifestsCommand
 }
@@ -43,7 +41,7 @@ func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.Location, "location", "nbg1", "")
 	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
 	flags.BoolVar(&cmd.NoFirewall, "no-firewall", false, "")
-	flags.BoolVar(&cmd.NoKubespan, "no-kubespan", false, "")
+	flags.BoolVar(&cmd.Kubespan, "kubespan", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 	cmd.ApplyManifestsCommand.RegisterOpts(flags)
 }
@@ -107,7 +105,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		}
 	}
 
-	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.NoKubespan)
+	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.Kubespan)
 	if err != nil {
 		return err
 	}
@@ -138,17 +136,13 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	err = clients.KubernetesWaitNodeRunning(cl, controlplaneServer.Name)
+	err = clients.KubernetesWaitNodeRegistered(cl, controlplaneServer.Name)
 	if err != nil {
 		return err
 	}
 
-	err = utils.RetrySlow(logger, func() error {
-		kubeClientset, _, err := clients.KubernetesInit(cl)
-		if err != nil {
-			return err
-		}
-		_, err = kubeClientset.AppsV1().DaemonSets("kube-system").Patch(*cl.Ctx, "kube-flannel", k8stypes.JSONPatchType, []byte(`
+	err = utils.Retry(logger, func() error {
+		return TalosPatchFlannelDaemonSet(cl, `
 			[
 				{
 					"op": "add",
@@ -156,12 +150,11 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 					"value": "--iface=eth1"
 				}
 			]
-		`), k8smetav1.PatchOptions{})
-		if err != nil {
-			return err
-		}
-		return nil
+		`)
 	})
+	if err != nil {
+		return err
+	}
 
 	applyManifestsCommand := ApplyManifestsCommand{}
 	err = applyManifestsCommand.Run(logger, dir)

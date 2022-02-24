@@ -81,7 +81,7 @@ func (cmd *AddNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	err = clients.KubernetesWaitNodeRunning(cl, server.Name)
+	err = clients.KubernetesWaitNodeRegistered(cl, server.Name)
 	if err != nil {
 		return err
 	}

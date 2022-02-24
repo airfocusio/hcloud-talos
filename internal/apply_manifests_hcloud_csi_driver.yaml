@@ -147,8 +147,8 @@ spec:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
         - name: hcloud-csi-driver
-          image: {{ .CsiDriver.Image }}
-          imagePullPolicy: {{ .CsiDriver.ImagePullPolicy }}
+          image: "{{ .CsiDriver.Image }}"
+          imagePullPolicy: "{{ .CsiDriver.ImagePullPolicy }}"
           env:
             - name: CSI_ENDPOINT
               value: unix:///run/csi/socket
@@ -250,8 +250,8 @@ spec:
           securityContext:
             privileged: true
         - name: hcloud-csi-driver
-          image: {{ .CsiDriver.Image }}
-          imagePullPolicy: {{ .CsiDriver.ImagePullPolicy }}
+          image: "{{ .CsiDriver.Image }}"
+          imagePullPolicy: "{{ .CsiDriver.ImagePullPolicy }}"
           env:
             - name: CSI_ENDPOINT
               value: unix:///run/csi/socket
@@ -353,4 +353,4 @@ metadata:
   name: hcloud-csi
   namespace: kube-system
 stringData:
-  token: {{ .Secret.Token }}
+  token: "{{ .Secret.Token }}"
