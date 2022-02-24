@@ -2,7 +2,7 @@
 
 ## Commands
 
-This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered [Kubernetes](https://kubernetes.io/) clustes on the [Hetzner Cloud](https://www.hetzner.com/cloud). Bootstrapping a new cluster performs the following steps:
+This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered [Kubernetes](https://kubernetes.io/) clusters on the [Hetzner Cloud](https://www.hetzner.com/cloud). Bootstrapping a new cluster performs the following steps:
 
 * Create private network `10.0.0.0/16` for inter-node communication
 * Create placement group to ensure nodes to not run on the same physical machine
