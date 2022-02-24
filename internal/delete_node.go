@@ -22,14 +22,16 @@ func (cmdId *DeleteNodeCommandId) Create() Command {
 }
 
 type DeleteNodeCommand struct {
-	NodeName string
-	Force    bool
+	NodeName   string
+	KeepServer bool
+	Force      bool
 }
 
 var _ Command = (*DeleteNodeCommand)(nil)
 
 func (cmd *DeleteNodeCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.NodeName, "node-name", "", "")
+	flags.BoolVar(&cmd.KeepServer, "keep-server", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 }
 
@@ -104,12 +106,14 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	err = utils.Retry(cl.Logger, func() error {
-		_, err := cl.Client.Server.Delete(*cl.Ctx, server)
-		return err
-	})
-	if err != nil {
-		return err
+	if !cmd.KeepServer {
+		err = utils.Retry(cl.Logger, func() error {
+			_, err := cl.Client.Server.Delete(*cl.Ctx, server)
+			return err
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

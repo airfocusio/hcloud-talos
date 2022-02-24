@@ -2,26 +2,20 @@
 
 ## Commands
 
-This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered [Kubernetes](https://kubernetes.io/) clustes on the [Hetzner Cloud](https://www.hetzner.com/cloud).
+This CLI tool provides an easy way to manage [Talos](https://talos.dev/) powered [Kubernetes](https://kubernetes.io/) clustes on the [Hetzner Cloud](https://www.hetzner.com/cloud). Bootstrapping a new cluster performs the following steps:
 
-* `bootstrap-cluster`
-    * Create a private network `10.0.0.0/16` for inter-node communication
-    * Create a placement group to ensure nodes to not run on the same physical machine
-    * Create a firewall rule
-    * Create a load balancer to access the controlplane nodes via Kubernetes API server (port `6443`) or Talos API server (port `50000`)
-    * Create a first controlplane node running Talos
-    * Install [Hetzner Cloud Controller Manger](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
-    * Install [Hetzner CSI Driver](https://github.com/hetznercloud/csi-driver)
-* `add-node`
-    * Create an additional node running Talos, either controlplane or worker
-* `destroy-cluster`
-    * Remove all Hetzner resources (by label)
+* Create private network `10.0.0.0/16` for inter-node communication
+* Create placement group to ensure nodes to not run on the same physical machine
+* Create load balancer to access the controlplane nodes Kubernetes API server (port `6443`) or Talos API server (port `50000`)
+* Create firewall rules to block access to nodes from outside of the private network
+* Create first controlplane node
+* Install [Hetzner Cloud Controller Manger](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
+* Install [Hetzner CSI Driver](https://github.com/hetznercloud/csi-driver)
 
 ## Usage
 
 ```bash
-# ATTENTION: this folder will contain all crucial files
-# they must be stored somewhere secure!
+# ATTENTION: this folder will contain all crucial files and they must be stored somewhere secure!
 mkdir my-cluster
 cd my-cluster
 
@@ -30,7 +24,7 @@ export HCLOUD_TOKEN=...
 hcloud-talos bootstrap-cluster --cluster-name=my-cluster --node-name=controlplane-01
 
 # add more nodes
-hcloud-talos add-node --cluster-name=cluster --node-name=controlplane-02 --controlplane
+hcloud-talos add-node --node-name=controlplane-02 --controlplane
 hcloud-talos add-node --node-name=worker-01
 ```
 

@@ -26,8 +26,6 @@ type AddNodeCommand struct {
 	PoolName     string
 }
 
-var _ Command = (*AddNodeCommand)(nil)
-
 func (cmd *AddNodeCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.BoolVar(&cmd.Controlplane, "controlplane", false, "")
 	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")

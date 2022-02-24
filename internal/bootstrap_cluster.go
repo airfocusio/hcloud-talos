@@ -28,7 +28,7 @@ type BootstrapClusterCommand struct {
 	NetworkZone           string
 	Token                 string
 	NoFirewall            bool
-	Kubespan              bool
+	NoTalosKubespan       bool
 	Force                 bool
 	ApplyManifestsCommand ApplyManifestsCommand
 }
@@ -41,7 +41,7 @@ func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
 	flags.StringVar(&cmd.Location, "location", "nbg1", "")
 	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
 	flags.BoolVar(&cmd.NoFirewall, "no-firewall", false, "")
-	flags.BoolVar(&cmd.Kubespan, "kubespan", false, "")
+	flags.BoolVar(&cmd.NoTalosKubespan, "no-talos-kubespan", false, "")
 	flags.BoolVar(&cmd.Force, "force", false, "")
 	cmd.ApplyManifestsCommand.RegisterOpts(flags)
 }
@@ -105,7 +105,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		}
 	}
 
-	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.Kubespan)
+	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.NoTalosKubespan)
 	if err != nil {
 		return err
 	}
@@ -156,8 +156,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	applyManifestsCommand := ApplyManifestsCommand{}
-	err = applyManifestsCommand.Run(logger, dir)
+	err = cmd.ApplyManifestsCommand.Run(logger, dir)
 	if err != nil {
 		return err
 	}
