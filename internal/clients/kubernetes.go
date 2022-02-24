@@ -1,10 +1,12 @@
 package clients
 
 import (
+	"fmt"
 	"path"
 	"time"
 
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
+	"github.com/airfocusio/hcloud-talos/internal/utils"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -23,19 +25,41 @@ import (
 
 var metadataAccessor = apimeta.NewAccessor()
 
-func KubernetesListNodes(cl *cluster.Cluster) (*v1.NodeList, error) {
+func KubernetesWaitNodeRunning(cl *cluster.Cluster, name string) error {
 	clientset, _, err := KubernetesInit(cl)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	nodes, err := clientset.CoreV1().Nodes().List(*cl.Ctx, metav1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return nodes, nil
+	return utils.RetrySlow(cl.Logger, func() error {
+		node, err := clientset.CoreV1().Nodes().Get(*cl.Ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if node.Status.Phase != v1.NodeRunning {
+			return fmt.Errorf("node not yet running")
+		}
+		return nil
+	})
 }
 
-func KubernetesCreateFromManifest(cl *cluster.Cluster, namespace string, manifest string) error {
+func KubernetesWaitPodRunning(cl *cluster.Cluster, namespace string, name string) error {
+	clientset, _, err := KubernetesInit(cl)
+	if err != nil {
+		return err
+	}
+	return utils.RetrySlow(cl.Logger, func() error {
+		pod, err := clientset.CoreV1().Pods(namespace).Get(*cl.Ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if pod.Status.Phase != v1.PodRunning {
+			return fmt.Errorf("pod not yet running")
+		}
+		return nil
+	})
+}
+
+func KubernetesCreateFromManifest(cl *cluster.Cluster, manifest string) error {
 	clientset, config, err := KubernetesInit(cl)
 	if err != nil {
 		return err

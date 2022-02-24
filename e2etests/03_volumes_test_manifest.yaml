@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test
+  namespace: test
+spec:
+  selector:
+    matchLabels:
+      app: test
+  serviceName: test
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: test
+          image: alpine:3.15
+          command:
+            - sh
+          args:
+            - -c
+            - |
+              set -e
+              ls -al /test
+              exec sleep infinite
+          volumeMounts:
+            - name: test
+              mountPath: /test
+  volumeClaimTemplates:
+    - metadata:
+        name: test
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: hcloud-volumes
+        resources:
+          requests:
+            storage: 16Gi

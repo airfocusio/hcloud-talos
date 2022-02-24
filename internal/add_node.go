@@ -81,18 +81,7 @@ func (cmd *AddNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	err = utils.RetrySlow(cl.Logger, func() error {
-		nodes, err := clients.KubernetesListNodes(cl)
-		if err != nil {
-			return err
-		}
-		for _, node := range nodes.Items {
-			if node.Name == server.Name {
-				return nil
-			}
-		}
-		return fmt.Errorf("node not yet available")
-	})
+	err = clients.KubernetesWaitNodeRunning(cl, server.Name)
 	if err != nil {
 		return err
 	}

@@ -138,18 +138,7 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	err = utils.RetrySlow(logger, func() error {
-		nodes, err := clients.KubernetesListNodes(cl)
-		if err != nil {
-			return err
-		}
-		for _, node := range nodes.Items {
-			if node.Name == controlplaneServer.Name {
-				return nil
-			}
-		}
-		return fmt.Errorf("node not yet available")
-	})
+	err = clients.KubernetesWaitNodeRunning(cl, controlplaneServer.Name)
 	if err != nil {
 		return err
 	}
