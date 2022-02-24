@@ -283,7 +283,7 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 			return err
 		}
 		if server != nil && server.Status != hcloud.ServerStatusOff {
-			return fmt.Errorf("server is not yet turned off")
+			return fmt.Errorf("server is not yet shut down")
 		}
 		return nil
 	})

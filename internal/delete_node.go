@@ -76,21 +76,14 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	logger.Debug.Printf("Shutting down server\n")
-	err = utils.Retry(cl.Logger, func() error {
-		_, _, err = cl.Client.Server.Shutdown(*cl.Ctx, server)
-		return err
-	})
-	if err != nil {
-		return nil
-	}
+	logger.Debug.Printf("Waiting for server to shut down talos\n")
 	err = utils.RetrySlow(cl.Logger, func() error {
 		server, _, err := cl.Client.Server.GetByID(*cl.Ctx, server.ID)
 		if err != nil {
 			return err
 		}
 		if server != nil && server.Status != hcloud.ServerStatusOff {
-			return fmt.Errorf("server is not yet turned off")
+			return fmt.Errorf("server is not yet shut down")
 		}
 		return nil
 	})
