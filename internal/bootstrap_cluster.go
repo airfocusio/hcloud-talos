@@ -1,79 +1,29 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
-	"os"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
-type BootstrapClusterCommandId struct{}
-
-func (cmdId *BootstrapClusterCommandId) Name() string {
-	return "bootstrap-cluster"
+type BootstrapClusterOpts struct {
+	ClusterName                    string
+	NodeName                       string
+	ServerType                     string
+	Location                       string
+	NetworkZone                    string
+	Token                          string
+	NoFirewall                     bool
+	NoTalosKubespan                bool
+	NoHcloudCloudControllerManager bool
+	NoHcloudCsiDriver              bool
 }
 
-func (cmdId *BootstrapClusterCommandId) Create() Command {
-	return &BootstrapClusterCommand{}
-}
-
-type BootstrapClusterCommand struct {
-	ClusterName           string
-	NodeName              string
-	ServerType            string
-	Location              string
-	NetworkZone           string
-	Token                 string
-	NoFirewall            bool
-	NoTalosKubespan       bool
-	Force                 bool
-	ApplyManifestsCommand ApplyManifestsCommand
-}
-
-func (cmd *BootstrapClusterCommand) RegisterOpts(flags *flag.FlagSet) {
-	cmd.Token = os.Getenv("HCLOUD_TOKEN")
-	flags.StringVar(&cmd.ClusterName, "cluster-name", "", "")
-	flags.StringVar(&cmd.NodeName, "node-name", "", "")
-	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")
-	flags.StringVar(&cmd.Location, "location", "nbg1", "")
-	flags.StringVar(&cmd.NetworkZone, "network-zone", "eu-central", "")
-	flags.BoolVar(&cmd.NoFirewall, "no-firewall", false, "")
-	flags.BoolVar(&cmd.NoTalosKubespan, "no-talos-kubespan", false, "")
-	flags.BoolVar(&cmd.Force, "force", false, "")
-	cmd.ApplyManifestsCommand.RegisterOpts(flags)
-}
-
-func (cmd *BootstrapClusterCommand) ValidateOpts() error {
-	if cmd.ClusterName == "" {
-		return fmt.Errorf("cluster name must not be empty")
-	}
-	if cmd.NodeName == "" {
-		return fmt.Errorf("node name must not be empty")
-	}
-	if cmd.ServerType == "" {
-		return fmt.Errorf("node server type must not be empty")
-	}
-	if cmd.Location == "" {
-		return fmt.Errorf("location must not be empty")
-	}
-	if cmd.NetworkZone == "" {
-		return fmt.Errorf("network zone must not be empty")
-	}
-	if cmd.Token == "" {
-		return fmt.Errorf("token must not be empty")
-	}
-	if err := cmd.ApplyManifestsCommand.ValidateOpts(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error {
+func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Create(logger, cmd.ClusterName, cmd.Location, cmd.NetworkZone, cmd.Token, cmd.Force)
+	err := cl.Create(logger, opts.ClusterName, opts.Location, opts.NetworkZone, opts.Token)
 	if err != nil {
 		return err
 	}
@@ -82,6 +32,24 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 	logger.Info.Printf("Bootstrapping cluster %s\n", cl.Config.ClusterName)
+	if opts.ClusterName == "" {
+		return fmt.Errorf("cluster name must not be empty")
+	}
+	if opts.NodeName == "" {
+		return fmt.Errorf("node name must not be empty")
+	}
+	if opts.ServerType == "" {
+		return fmt.Errorf("node server type must not be empty")
+	}
+	if opts.Location == "" {
+		return fmt.Errorf("location must not be empty")
+	}
+	if opts.NetworkZone == "" {
+		return fmt.Errorf("network zone must not be empty")
+	}
+	if opts.Token == "" {
+		return fmt.Errorf("token must not be empty")
+	}
 
 	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), true)
 	if err != nil {
@@ -98,19 +66,19 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	if !cmd.NoFirewall {
+	if !opts.NoFirewall {
 		_, err = clients.HcloudEnsureFirewall(cl, nodeFirewallTemplate(cl, network), true)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = TalosGenConfig(cl, network, cmd.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !cmd.NoTalosKubespan)
+	_, err = TalosGenConfig(cl, network, opts.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !opts.NoTalosKubespan)
 	if err != nil {
 		return err
 	}
 
-	controlplaneNodeTemplate, err := controlplaneNodeTemplate(cl, cmd.ServerType, cmd.NodeName)
+	controlplaneNodeTemplate, err := controlplaneNodeTemplate(cl, opts.ServerType, opts.NodeName)
 	if err != nil {
 		return err
 	}
@@ -156,7 +124,10 @@ func (cmd *BootstrapClusterCommand) Run(logger *utils.Logger, dir string) error 
 		return err
 	}
 
-	err = cmd.ApplyManifestsCommand.Run(logger, dir)
+	err = ApplyManifests(logger, dir, ApplyManifestsOpts{
+		NoHcloudCloudControllerManager: opts.NoHcloudCloudControllerManager,
+		NoHcloudCsiDriver:              opts.NoHcloudCsiDriver,
+	})
 	if err != nil {
 		return err
 	}

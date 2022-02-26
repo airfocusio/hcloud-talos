@@ -8,14 +8,13 @@ import (
 )
 
 func TestBootstrapCluster(t *testing.T) {
-	cmd := internal.BootstrapClusterCommand{
+	err := internal.BootstrapCluster(&logger, clusterDir, internal.BootstrapClusterOpts{
 		ClusterName: clusterName,
 		ServerType:  "cx21",
 		NodeName:    "controlplane-01",
 		Location:    "nbg1",
 		NetworkZone: "eu-central",
 		Token:       hcloudToken,
-	}
-	err := cmd.Run(&logger, clusterDir)
+	})
 	assert.NoError(t, err)
 }

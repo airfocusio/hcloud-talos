@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
@@ -9,29 +8,11 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-type DestroyClusterCommandId struct{}
-
-func (cmdId *DestroyClusterCommandId) Name() string {
-	return "destroy-cluster"
-}
-
-func (cmdId *DestroyClusterCommandId) Create() Command {
-	return &DestroyClusterCommand{}
-}
-
-type DestroyClusterCommand struct {
+type DestroyClusterOpts struct {
 	Force bool
 }
 
-func (cmd *DestroyClusterCommand) RegisterOpts(flags *flag.FlagSet) {
-	flags.BoolVar(&cmd.Force, "force", false, "")
-}
-
-func (cmd *DestroyClusterCommand) ValidateOpts() error {
-	return nil
-}
-
-func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
+func DestroyCluster(logger *utils.Logger, dir string, opts DestroyClusterOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
 	err := cl.Load(logger)
 	if err != nil {
@@ -39,7 +20,7 @@ func (cmd *DestroyClusterCommand) Run(logger *utils.Logger, dir string) error {
 	}
 	logger.Info.Printf("Destroying cluster %q\n", cl.Config.ClusterName)
 
-	if !cmd.Force {
+	if !opts.Force {
 		return fmt.Errorf("destroying the cluster must be forced")
 	}
 

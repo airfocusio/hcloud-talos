@@ -2,7 +2,6 @@ package internal
 
 import (
 	_ "embed"
-	"flag"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
@@ -16,31 +15,12 @@ var (
 	hcloudCsiDriverManifestTmpl string
 )
 
-type ApplyManifestsCommandId struct{}
-
-func (cmdId *ApplyManifestsCommandId) Name() string {
-	return "apply-manifests"
-}
-
-func (cmdId *ApplyManifestsCommandId) Create() Command {
-	return &ApplyManifestsCommand{}
-}
-
-type ApplyManifestsCommand struct {
+type ApplyManifestsOpts struct {
 	NoHcloudCloudControllerManager bool
 	NoHcloudCsiDriver              bool
 }
 
-func (cmd *ApplyManifestsCommand) RegisterOpts(flags *flag.FlagSet) {
-	flags.BoolVar(&cmd.NoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
-	flags.BoolVar(&cmd.NoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
-}
-
-func (cmd *ApplyManifestsCommand) ValidateOpts() error {
-	return nil
-}
-
-func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
+func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
 	err := cl.Load(logger)
 	if err != nil {
@@ -82,10 +62,10 @@ func (cmd *ApplyManifestsCommand) Run(logger *utils.Logger, dir string) error {
 	}
 
 	manifestsConcatenated := [][]byte{}
-	if !cmd.NoHcloudCloudControllerManager {
+	if !opts.NoHcloudCloudControllerManager {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCloudControllerManagerManifest))
 	}
-	if !cmd.NoHcloudCsiDriver {
+	if !opts.NoHcloudCsiDriver {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCsiDriverManifest))
 	}
 

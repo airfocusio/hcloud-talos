@@ -8,10 +8,9 @@ import (
 )
 
 func TestAddNode(t *testing.T) {
-	cmd := internal.AddNodeCommand{
+	_, err := internal.AddNode(&logger, clusterDir, internal.AddNodeOpts{
 		ServerType: "cx21",
 		NodeName:   "worker-01",
-	}
-	err := cmd.Run(&logger, clusterDir)
+	})
 	assert.NoError(t, err)
 }

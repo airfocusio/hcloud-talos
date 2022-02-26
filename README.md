@@ -21,16 +21,9 @@ cd my-cluster
 
 export HCLOUD_TOKEN=...
 # bootstrap cluster
-hcloud-talos bootstrap-cluster --cluster-name=my-cluster --node-name=controlplane-01
+hcloud-talos bootstrap-cluster my-cluster controlplane-1
 
 # add more nodes
-hcloud-talos add-node --node-name=controlplane-02 --controlplane
-hcloud-talos add-node --node-name=worker-01
-```
-
-## Development
-
-```bash
-export HCLOUD_TOKEN=...
-go run . --dir=test --verbose command [args]
+hcloud-talos add-node controlplane-2 --controlplane
+hcloud-talos add-node worker-1
 ```

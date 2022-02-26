@@ -15,7 +15,13 @@ var (
 )
 
 func main() {
-	if err := cmd.Execute(cmd.FullVersion{Version: version, Commit: commit, Date: date, BuiltBy: builtBy}); err != nil {
+	cmd.Version = cmd.FullVersion{
+		Version: version,
+		Commit:  commit,
+		Date:    date,
+		BuiltBy: builtBy,
+	}
+	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

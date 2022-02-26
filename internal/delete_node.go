@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
 	"net"
 
@@ -11,50 +10,27 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-type DeleteNodeCommandId struct{}
-
-func (cmdId *DeleteNodeCommandId) Name() string {
-	return "delete-node"
-}
-
-func (cmdId *DeleteNodeCommandId) Create() Command {
-	return &DeleteNodeCommand{}
-}
-
-type DeleteNodeCommand struct {
+type DeleteNodeOpts struct {
 	NodeName   string
 	KeepServer bool
 	Force      bool
 }
 
-var _ Command = (*DeleteNodeCommand)(nil)
-
-func (cmd *DeleteNodeCommand) RegisterOpts(flags *flag.FlagSet) {
-	flags.StringVar(&cmd.NodeName, "node-name", "", "")
-	flags.BoolVar(&cmd.KeepServer, "keep-server", false, "")
-	flags.BoolVar(&cmd.Force, "force", false, "")
-}
-
-func (cmd *DeleteNodeCommand) ValidateOpts() error {
-	if cmd.NodeName == "" {
-		return fmt.Errorf("node name must not be empty")
-	}
-	return nil
-}
-
-func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
+func DeleteNode(logger *utils.Logger, dir string, opts DeleteNodeOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
 	err := cl.Load(logger)
 	if err != nil {
 		return err
 	}
-	logger.Info.Printf("Deleting node %s/%s\n", cl.Config.ClusterName, cmd.NodeName)
-
-	if !cmd.Force {
+	logger.Info.Printf("Deleting node %s/%s\n", cl.Config.ClusterName, opts.NodeName)
+	if opts.NodeName == "" {
+		return fmt.Errorf("node name must not be empty")
+	}
+	if !opts.Force {
 		return fmt.Errorf("deleting a node must be forced")
 	}
 
-	serverName := nodeName(cl, cmd.NodeName)
+	serverName := nodeName(cl, opts.NodeName)
 	server, _, err := cl.Client.Server.Get(*cl.Ctx, serverName)
 	if err != nil {
 		return err
@@ -99,7 +75,7 @@ func (cmd *DeleteNodeCommand) Run(logger *utils.Logger, dir string) error {
 		return err
 	}
 
-	if !cmd.KeepServer {
+	if !opts.KeepServer {
 		err = utils.Retry(cl.Logger, func() error {
 			_, err := cl.Client.Server.Delete(*cl.Ctx, server)
 			return err

@@ -20,7 +20,7 @@ type Cluster struct {
 	Config Config
 }
 
-func (cl *Cluster) Create(logger *utils.Logger, clusterName string, hcloudLocation string, hcloudNetworkZone string, hcloudToken string, force bool) error {
+func (cl *Cluster) Create(logger *utils.Logger, clusterName string, hcloudLocation string, hcloudNetworkZone string, hcloudToken string) error {
 	ctx := context.Background()
 	cl.Ctx = &ctx
 	cl.Logger = logger
@@ -33,18 +33,7 @@ func (cl *Cluster) Create(logger *utils.Logger, clusterName string, hcloudLocati
 	if err != nil {
 		return err
 	} else if len(files) > 0 {
-		if !force {
-			return fmt.Errorf("directory must be empty")
-		} else {
-			err := os.RemoveAll(cl.Dir)
-			if err != nil {
-				return err
-			}
-			err = os.MkdirAll(cl.Dir, 0o775)
-			if err != nil {
-				return err
-			}
-		}
+		return fmt.Errorf("directory must be empty")
 	}
 
 	cl.Config.ClusterName = clusterName

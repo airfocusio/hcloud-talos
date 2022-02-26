@@ -1,40 +1,21 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"runtime/debug"
 
-	"github.com/airfocusio/hcloud-talos/internal"
-	"github.com/airfocusio/hcloud-talos/internal/utils"
+	"github.com/spf13/cobra"
 )
 
-type VersionCommandId struct {
-	Version FullVersion
-}
+var Version FullVersion
 
-func (cmdId *VersionCommandId) Name() string {
-	return "version"
-}
-
-func (cmdId *VersionCommandId) Create() internal.Command {
-	return &VersionCommand{Version: cmdId.Version}
-}
-
-type VersionCommand struct {
-	Version FullVersion
-}
-
-func (cmd *VersionCommand) RegisterOpts(flags *flag.FlagSet) {}
-
-func (cmd *VersionCommand) ValidateOpts() error {
-	return nil
-}
-
-func (cmd *VersionCommand) Run(logger *utils.Logger, dir string) error {
-	os.Stdout.Write([]byte(cmd.Version.Version + "\n"))
-	return nil
+var versionCmd = &cobra.Command{
+	Use:  "version",
+	Args: cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		os.Stdout.Write([]byte(Version.ToString() + "\n"))
+	},
 }
 
 type FullVersion struct {

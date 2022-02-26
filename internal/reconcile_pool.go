@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
@@ -10,17 +9,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-type ReconcilePoolCommandId struct{}
-
-func (cmdId *ReconcilePoolCommandId) Name() string {
-	return "reconcile-pool"
-}
-
-func (cmdId *ReconcilePoolCommandId) Create() Command {
-	return &ReconcilePoolCommand{}
-}
-
-type ReconcilePoolCommand struct {
+type ReconcilePoolOpts struct {
 	PoolName       string
 	NodeNamePrefix string
 	NodeCount      int
@@ -28,75 +17,61 @@ type ReconcilePoolCommand struct {
 	Force          bool
 }
 
-func (cmd *ReconcilePoolCommand) RegisterOpts(flags *flag.FlagSet) {
-	flags.StringVar(&cmd.PoolName, "pool-name", "", "")
-	flags.StringVar(&cmd.NodeNamePrefix, "node-name-prefix", "", "")
-	flags.StringVar(&cmd.ServerType, "server-type", "cx21", "")
-	flags.IntVar(&cmd.NodeCount, "node-count", -1, "")
-	flags.BoolVar(&cmd.Force, "force", false, "")
-}
-
-func (cmd *ReconcilePoolCommand) ValidateOpts() error {
-	if cmd.PoolName == "" {
-		return fmt.Errorf("pool name must not be empty")
-	}
-	if cmd.NodeNamePrefix == "" {
-		return fmt.Errorf("node name prefix must not be empty")
-	}
-	if cmd.NodeCount < 0 {
-		return fmt.Errorf("node count must not be negative")
-	}
-	if cmd.ServerType == "" {
-		return fmt.Errorf("node server type must not be empty")
-	}
-	return nil
-}
-
-func (cmd *ReconcilePoolCommand) Run(logger *utils.Logger, dir string) error {
+func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
 	err := cl.Load(logger)
 	if err != nil {
 		return err
 	}
-	logger.Info.Printf("Reconciling pool %s/%s\n", cl.Config.ClusterName, cmd.PoolName)
+	logger.Info.Printf("Reconciling pool %s/%s\n", cl.Config.ClusterName, opts.PoolName)
+	if opts.PoolName == "" {
+		return fmt.Errorf("pool name must not be empty")
+	}
+	if opts.NodeNamePrefix == "" {
+		return fmt.Errorf("node name prefix must not be empty")
+	}
+	if opts.NodeCount < 0 {
+		return fmt.Errorf("node count must not be negative")
+	}
+	if opts.ServerType == "" {
+		return fmt.Errorf("node server type must not be empty")
+	}
 
 	for {
 		poolServers, _, err := cl.Client.Server.List(*cl.Ctx, hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: clusterLabel + "=" + cl.Config.ClusterName + "," + roleLabel + "=worker," + poolLabel + "=" + cmd.PoolName,
+				LabelSelector: clusterLabel + "=" + cl.Config.ClusterName + "," + roleLabel + "=worker," + poolLabel + "=" + opts.PoolName,
 			},
 		})
 		if err != nil {
 			return err
 		}
 
-		nodeCountDiff := len(poolServers) - cmd.NodeCount
+		nodeCountDiff := len(poolServers) - opts.NodeCount
 		if nodeCountDiff < 0 {
-			nodeName, err := findNextNodeName(cl, cmd.NodeNamePrefix, poolServers)
+			nodeName, err := findNextNodeName(cl, opts.NodeNamePrefix, poolServers)
 			if err != nil {
 				return err
 			}
-			innerCmd := AddNodeCommand{
-				ServerType: cmd.ServerType,
+			_, err = AddNode(logger, cl.Dir, AddNodeOpts{
+				ServerType: opts.ServerType,
 				NodeName:   nodeName,
-				PoolName:   cmd.PoolName,
-			}
-			err = innerCmd.Run(logger, cl.Dir)
+				PoolName:   opts.PoolName,
+			})
 			if err != nil {
 				return err
 			}
 		} else if nodeCountDiff > 0 {
 			server := poolServers[len(poolServers)-1]
-			innerCmd := DeleteNodeCommand{
+			err := DeleteNode(logger, cl.Dir, DeleteNodeOpts{
 				NodeName: strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
-				Force:    cmd.Force,
-			}
-			err := innerCmd.Run(logger, cl.Dir)
+				Force:    opts.Force,
+			})
 			if err != nil {
 				return err
 			}
 		} else {
-			logger.Debug.Printf("Pool %s/%s already has %d of %d nodes\n", cl.Config.ClusterName, cmd.PoolName, len(poolServers), cmd.NodeCount)
+			logger.Debug.Printf("Pool %s/%s already has %d of %d nodes\n", cl.Config.ClusterName, opts.PoolName, len(poolServers), opts.NodeCount)
 			break
 		}
 	}

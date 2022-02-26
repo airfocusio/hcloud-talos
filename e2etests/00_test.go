@@ -45,8 +45,7 @@ func setup() {
 func cleanup() {
 	fmt.Printf("cleanup\n")
 
-	cmd := internal.DestroyClusterCommand{Force: true}
-	err := cmd.Run(&logger, clusterDir)
+	err := internal.DestroyCluster(&logger, clusterDir, internal.DestroyClusterOpts{Force: true})
 	if err != nil {
 		fmt.Printf("unable to destroy cluster: %v\n", err)
 	}
