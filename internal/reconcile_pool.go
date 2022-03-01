@@ -82,7 +82,7 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 func findNextNodeName(cl *cluster.Cluster, nodeNamePrefix string, poolServers []*hcloud.Server) (string, error) {
 	for i := 1; i <= 1000; i++ {
 		exists := false
-		proposedNodeName := fmt.Sprintf("%s%d", nodeNamePrefix, i)
+		proposedNodeName := fmt.Sprintf("%s-%d", nodeNamePrefix, i)
 		for _, server := range poolServers {
 			if server.Name == nodeName(cl, proposedNodeName) {
 				exists = true
