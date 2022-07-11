@@ -9,6 +9,7 @@ import (
 
 func TestBootstrapCluster(t *testing.T) {
 	err := internal.BootstrapCluster(&logger, clusterDir, internal.BootstrapClusterOpts{
+		ConfigFile:  configFile,
 		ClusterName: clusterName,
 		ServerType:  "cx21",
 		NodeName:    "controlplane-01",

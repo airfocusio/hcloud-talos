@@ -16,13 +16,14 @@ var (
 )
 
 type ApplyManifestsOpts struct {
+	ConfigFile                     string
 	NoHcloudCloudControllerManager bool
 	NoHcloudCsiDriver              bool
 }
 
 func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Load(logger)
+	err := cl.Load(opts.ConfigFile, logger)
 	if err != nil {
 		return err
 	}

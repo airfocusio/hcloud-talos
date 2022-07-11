@@ -10,6 +10,7 @@ import (
 )
 
 type AddNodeOpts struct {
+	ConfigFile   string
 	ServerType   string
 	Controlplane bool
 	NodeName     string
@@ -18,7 +19,7 @@ type AddNodeOpts struct {
 
 func AddNode(logger *utils.Logger, dir string, opts AddNodeOpts) (*hcloud.Server, error) {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Load(logger)
+	err := cl.Load(opts.ConfigFile, logger)
 	if err != nil {
 		return nil, err
 	}

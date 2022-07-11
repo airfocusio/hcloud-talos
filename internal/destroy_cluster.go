@@ -9,12 +9,13 @@ import (
 )
 
 type DestroyClusterOpts struct {
-	Force bool
+	ConfigFile string
+	Force      bool
 }
 
 func DestroyCluster(logger *utils.Logger, dir string, opts DestroyClusterOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Load(logger)
+	err := cl.Load(opts.ConfigFile, logger)
 	if err != nil {
 		return err
 	}

@@ -46,7 +46,7 @@ func (cl *Cluster) Create(logger *utils.Logger, clusterName string, hcloudLocati
 	return nil
 }
 
-func (cl *Cluster) Load(logger *utils.Logger) error {
+func (cl *Cluster) Load(configFile string, logger *utils.Logger) error {
 	ctx := context.Background()
 	cl.Ctx = &ctx
 	cl.Logger = logger
@@ -65,7 +65,7 @@ func (cl *Cluster) Load(logger *utils.Logger) error {
 	return nil
 }
 
-func (cl Cluster) Save() error {
+func (cl Cluster) Save(configFile string) error {
 	yamlBytes, err := yaml.Marshal(&cl.Config)
 	if err != nil {
 		return err

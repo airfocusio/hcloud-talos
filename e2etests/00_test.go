@@ -9,10 +9,14 @@ import (
 	"github.com/airfocusio/hcloud-talos/internal/utils"
 )
 
-var clusterName = ""
-var clusterDir = ""
-var hcloudToken = ""
-var logger utils.Logger = utils.NewLogger(true)
+var (
+	clusterName = ""
+	clusterDir  = ""
+	hcloudToken = ""
+	logger      = utils.NewLogger(true)
+)
+
+const configFile = "hcloud-talos.yaml"
 
 func TestMain(t *testing.M) {
 	setup()
@@ -45,7 +49,10 @@ func setup() {
 func cleanup() {
 	fmt.Printf("cleanup\n")
 
-	err := internal.DestroyCluster(&logger, clusterDir, internal.DestroyClusterOpts{Force: true})
+	err := internal.DestroyCluster(&logger, clusterDir, internal.DestroyClusterOpts{
+		ConfigFile: configFile,
+		Force:      true,
+	})
 	if err != nil {
 		fmt.Printf("unable to destroy cluster: %v\n", err)
 	}

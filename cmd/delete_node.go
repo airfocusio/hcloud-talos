@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	deleteNodeCmdConfigFile string
 	deleteNodeCmdKeepServer bool
 	deleteNodeCmdForce      bool
 	deleteNodeCmd           = &cobra.Command{
@@ -16,6 +17,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			err := internal.DeleteNode(&logger, dir, internal.DeleteNodeOpts{
+				ConfigFile: deleteNodeCmdConfigFile,
 				KeepServer: deleteNodeCmdKeepServer,
 				Force:      deleteNodeCmdForce,
 				NodeName:   args[0],
@@ -26,6 +28,7 @@ var (
 )
 
 func init() {
+	deleteNodeCmd.Flags().StringVarP(&deleteNodeCmdConfigFile, "config", "c", defaultConfigFile, "")
 	deleteNodeCmd.Flags().BoolVar(&deleteNodeCmdKeepServer, "keep-server", false, "")
 	deleteNodeCmd.Flags().BoolVar(&deleteNodeCmdForce, "force", false, "")
 }

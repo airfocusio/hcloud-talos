@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	addNodeCmdConfigFile   string
 	addNodeCmdControlplane bool
 	addNodeCmdServerType   string
 	addNodeCmdPoolName     string
@@ -17,6 +18,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			_, err := internal.AddNode(&logger, dir, internal.AddNodeOpts{
+				ConfigFile:   addNodeCmdConfigFile,
 				ServerType:   addNodeCmdServerType,
 				Controlplane: addNodeCmdControlplane,
 				PoolName:     addNodeCmdPoolName,
@@ -28,6 +30,7 @@ var (
 )
 
 func init() {
+	addNodeCmd.Flags().StringVarP(&addNodeCmdConfigFile, "config", "c", defaultConfigFile, "")
 	addNodeCmd.Flags().BoolVar(&addNodeCmdControlplane, "controlplane", false, "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdServerType, "server-type", "cx21", "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdPoolName, "pool-name", "", "")

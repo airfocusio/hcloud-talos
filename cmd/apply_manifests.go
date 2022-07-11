@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	applyManifestsCmdConfigFile                     string
 	applyManifestsCmdNoHcloudCloudControllerManager bool
 	applyManifestsCmdNoHcloudCsiDriver              bool
 	applyManifestsCmd                               = &cobra.Command{
@@ -16,6 +17,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			err := internal.ApplyManifests(&logger, dir, internal.ApplyManifestsOpts{
+				ConfigFile:                     applyManifestsCmdConfigFile,
 				NoHcloudCloudControllerManager: applyManifestsCmdNoHcloudCloudControllerManager,
 				NoHcloudCsiDriver:              applyManifestsCmdNoHcloudCsiDriver,
 			})
@@ -25,6 +27,7 @@ var (
 )
 
 func init() {
+	applyManifestsCmd.Flags().StringVarP(&applyManifestsCmdConfigFile, "config", "c", defaultConfigFile, "")
 	applyManifestsCmd.Flags().BoolVar(&applyManifestsCmdNoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
 	applyManifestsCmd.Flags().BoolVar(&applyManifestsCmdNoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
 }

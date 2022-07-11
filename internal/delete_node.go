@@ -11,6 +11,7 @@ import (
 )
 
 type DeleteNodeOpts struct {
+	ConfigFile string
 	NodeName   string
 	KeepServer bool
 	Force      bool
@@ -18,7 +19,7 @@ type DeleteNodeOpts struct {
 
 func DeleteNode(logger *utils.Logger, dir string, opts DeleteNodeOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Load(logger)
+	err := cl.Load(opts.ConfigFile, logger)
 	if err != nil {
 		return err
 	}

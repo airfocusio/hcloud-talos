@@ -9,6 +9,7 @@ import (
 )
 
 type BootstrapClusterOpts struct {
+	ConfigFile                     string
 	ClusterName                    string
 	NodeName                       string
 	ServerType                     string
@@ -27,7 +28,7 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 	if err != nil {
 		return err
 	}
-	err = cl.Save()
+	err = cl.Save(opts.ConfigFile)
 	if err != nil {
 		return err
 	}
@@ -125,6 +126,7 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 	}
 
 	err = ApplyManifests(logger, dir, ApplyManifestsOpts{
+		ConfigFile:                     opts.ConfigFile,
 		NoHcloudCloudControllerManager: opts.NoHcloudCloudControllerManager,
 		NoHcloudCsiDriver:              opts.NoHcloudCsiDriver,
 	})

@@ -7,15 +7,17 @@ import (
 )
 
 var (
-	destroyClusterCmdForce bool
-	destroyClusterCmd      = &cobra.Command{
+	destroyClusterCmdConfigFile string
+	destroyClusterCmdForce      bool
+	destroyClusterCmd           = &cobra.Command{
 		Use:   "destroy-cluster",
 		Short: "Destroy the cluster",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			err := internal.DestroyCluster(&logger, dir, internal.DestroyClusterOpts{
-				Force: destroyClusterCmdForce,
+				ConfigFile: destroyClusterCmdConfigFile,
+				Force:      destroyClusterCmdForce,
 			})
 			return err
 		},
@@ -23,5 +25,6 @@ var (
 )
 
 func init() {
+	destroyClusterCmd.Flags().StringVarP(&destroyClusterCmdConfigFile, "config", "c", defaultConfigFile, "")
 	destroyClusterCmd.Flags().BoolVar(&destroyClusterCmdForce, "force", false, "")
 }

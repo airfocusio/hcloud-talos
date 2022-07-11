@@ -18,7 +18,7 @@ var (
 
 func TestVolumes(t *testing.T) {
 	cl := &cluster.Cluster{Dir: clusterDir}
-	err := cl.Load(&logger)
+	err := cl.Load(configFile, &logger)
 	assert.NoError(t, err)
 
 	manifests, err := utils.YamlSplitMany([]byte(manifest))

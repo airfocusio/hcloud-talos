@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	reconcilePoolCmdConfigFile     string
 	reconcilePoolCmdServerType     string
 	reconcilePoolCmdNodeNamePrefix string
 	reconcilePoolCmdNodeCount      int
@@ -18,6 +19,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			err := internal.ReconcilePool(&logger, dir, internal.ReconcilePoolOpts{
+				ConfigFile:     reconcilePoolCmdConfigFile,
 				NodeNamePrefix: reconcilePoolCmdNodeNamePrefix,
 				NodeCount:      reconcilePoolCmdNodeCount,
 				ServerType:     reconcilePoolCmdServerType,
@@ -30,6 +32,7 @@ var (
 )
 
 func init() {
+	reconcilePoolCmd.Flags().StringVarP(&reconcilePoolCmdConfigFile, "config", "c", defaultConfigFile, "")
 	reconcilePoolCmd.Flags().BoolVar(&reconcilePoolCmdForce, "force", false, "")
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdServerType, "server-type", "cx21", "")
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdNodeNamePrefix, "node-name-prefix", "worker", "")

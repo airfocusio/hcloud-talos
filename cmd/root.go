@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultConfigFile = "hcloud-talos.yaml"
+
 var (
 	verbose bool
 	dir     string

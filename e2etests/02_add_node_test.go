@@ -9,6 +9,7 @@ import (
 
 func TestAddNode(t *testing.T) {
 	_, err := internal.AddNode(&logger, clusterDir, internal.AddNodeOpts{
+		ConfigFile: configFile,
 		ServerType: "cx21",
 		NodeName:   "worker-01",
 	})

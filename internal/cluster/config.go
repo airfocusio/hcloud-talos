@@ -1,7 +1,5 @@
 package cluster
 
-const configFile = "hcloudtalosconfig"
-
 type Config struct {
 	ClusterName string       `yaml:"clusterName"`
 	Hcloud      ConfigHcloud `yaml:"hcloud"`

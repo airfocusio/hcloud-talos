@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	bootstrapClusterCmdConfigFile                     string
 	bootstrapClusterCmdServerType                     string
 	bootstrapClusterCmdLocation                       string
 	bootstrapClusterCmdNetworkZone                    string
@@ -23,6 +24,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := utils.NewLogger(verbose)
 			err := internal.BootstrapCluster(&logger, dir, internal.BootstrapClusterOpts{
+				ConfigFile:                     bootstrapClusterCmdConfigFile,
 				ClusterName:                    args[0],
 				NodeName:                       args[1],
 				ServerType:                     bootstrapClusterCmdServerType,
@@ -40,6 +42,7 @@ var (
 )
 
 func init() {
+	bootstrapClusterCmd.Flags().StringVarP(&bootstrapClusterCmdConfigFile, "config", "c", defaultConfigFile, "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdServerType, "server-type", "cx21", "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdLocation, "location", "nbg1", "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdNetworkZone, "network-zone", "eu-central", "")

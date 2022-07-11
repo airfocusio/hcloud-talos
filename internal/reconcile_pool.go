@@ -10,6 +10,7 @@ import (
 )
 
 type ReconcilePoolOpts struct {
+	ConfigFile     string
 	PoolName       string
 	NodeNamePrefix string
 	NodeCount      int
@@ -19,7 +20,7 @@ type ReconcilePoolOpts struct {
 
 func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) error {
 	cl := &cluster.Cluster{Dir: dir}
-	err := cl.Load(logger)
+	err := cl.Load(opts.ConfigFile, logger)
 	if err != nil {
 		return err
 	}
