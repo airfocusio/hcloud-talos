@@ -11,6 +11,7 @@ var (
 	addNodeCmdControlplane bool
 	addNodeCmdServerType   string
 	addNodeCmdPoolName     string
+	addNodeCmdTalosVersion string
 	addNodeCmd             = &cobra.Command{
 		Use:   "add-node [node-name]",
 		Short: "Add a new node",
@@ -23,6 +24,7 @@ var (
 				Controlplane: addNodeCmdControlplane,
 				PoolName:     addNodeCmdPoolName,
 				NodeName:     args[0],
+				TalosVersion: addNodeCmdTalosVersion,
 			})
 			return err
 		},
@@ -34,4 +36,5 @@ func init() {
 	addNodeCmd.Flags().BoolVar(&addNodeCmdControlplane, "controlplane", false, "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdServerType, "server-type", "cx21", "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdPoolName, "pool-name", "", "")
+	addNodeCmd.Flags().StringVar(&addNodeCmdTalosVersion, "talos-version", "", "")
 }

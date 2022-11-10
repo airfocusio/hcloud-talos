@@ -17,6 +17,8 @@ var (
 	bootstrapClusterCmdNoTalosKubespan                bool
 	bootstrapClusterCmdNoHcloudCloudControllerManager bool
 	bootstrapClusterCmdNoHcloudCsiDriver              bool
+	bootstrapClusterCmdTalosVersion                   string
+	bootstrapClusterCmdKubernetesVersion              string
 	bootstrapClusterCmd                               = &cobra.Command{
 		Use:   "bootstrap-cluster [cluster-name] [node-name]",
 		Short: "Bootstrap a new cluster",
@@ -35,6 +37,8 @@ var (
 				NoTalosKubespan:                bootstrapClusterCmdNoTalosKubespan,
 				NoHcloudCloudControllerManager: bootstrapClusterCmdNoHcloudCloudControllerManager,
 				NoHcloudCsiDriver:              bootstrapClusterCmdNoHcloudCsiDriver,
+				TalosVersion:                   bootstrapClusterCmdTalosVersion,
+				KubernetesVersion:              bootstrapClusterCmdKubernetesVersion,
 			})
 			return err
 		},
@@ -50,4 +54,6 @@ func init() {
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoTalosKubespan, "no-talos-kubespan", false, "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
+	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdTalosVersion, "talos-version", "", "")
+	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdKubernetesVersion, "kubernetes-version", "", "")
 }

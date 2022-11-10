@@ -16,6 +16,7 @@ type ReconcilePoolOpts struct {
 	NodeCount      int
 	ServerType     string
 	Force          bool
+	TalosVersion   string
 }
 
 func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) error {
@@ -55,10 +56,11 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 				return err
 			}
 			_, err = AddNode(logger, cl.Dir, AddNodeOpts{
-				ConfigFile: opts.ConfigFile,
-				ServerType: opts.ServerType,
-				NodeName:   nodeName,
-				PoolName:   opts.PoolName,
+				ConfigFile:   opts.ConfigFile,
+				ServerType:   opts.ServerType,
+				NodeName:     nodeName,
+				PoolName:     opts.PoolName,
+				TalosVersion: opts.TalosVersion,
 			})
 			if err != nil {
 				return err

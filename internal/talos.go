@@ -15,7 +15,7 @@ import (
 	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
-func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, withKubespan bool) (string, error) {
+func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, kubernetesVersion string, withKubespan bool) (string, error) {
 	configPatch, err := utils.RenderTemplate(`
 		[
 			{
