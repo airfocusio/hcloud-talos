@@ -55,6 +55,7 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 				return err
 			}
 			_, err = AddNode(logger, cl.Dir, AddNodeOpts{
+				ConfigFile: opts.ConfigFile,
 				ServerType: opts.ServerType,
 				NodeName:   nodeName,
 				PoolName:   opts.PoolName,
@@ -65,8 +66,9 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 		} else if nodeCountDiff > 0 {
 			server := poolServers[len(poolServers)-1]
 			err := DeleteNode(logger, cl.Dir, DeleteNodeOpts{
-				NodeName: strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
-				Force:    opts.Force,
+				ConfigFile: opts.ConfigFile,
+				NodeName:   strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
+				Force:      opts.Force,
 			})
 			if err != nil {
 				return err
