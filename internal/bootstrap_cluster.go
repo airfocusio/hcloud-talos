@@ -118,20 +118,20 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 		return err
 	}
 
-	// err = utils.Retry(logger, func() error {
-	// 	return TalosPatchFlannelDaemonSet(cl, `
-	// 		[
-	// 			{
-	// 				"op": "add",
-	// 				"path": "/spec/template/spec/containers/0/args/-",
-	// 				"value": "--iface=eth1"
-	// 			}
-	// 		]
-	// 	`)
-	// })
-	// if err != nil {
-	// 	return err
-	// }
+	err = utils.Retry(logger, func() error {
+		return TalosPatchFlannelDaemonSet(cl, `
+			[
+				{
+					"op": "add",
+					"path": "/spec/template/spec/containers/0/args/-",
+					"value": "--iface=eth1"
+				}
+			]
+		`)
+	})
+	if err != nil {
+		return err
+	}
 
 	err = ApplyManifests(logger, dir, ApplyManifestsOpts{
 		ConfigFile:                     opts.ConfigFile,
