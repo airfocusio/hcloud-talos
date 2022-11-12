@@ -24,8 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        talos-version: [1.1.2, 1.2.6]
-        kubernetes-version: [1.24.7]
+        version:
+          - talos: 1.1.2
+            kubernetes: 1.23.13
+          - talos: 1.2.6
+            kubernetes: 1.24.7
     steps:
     - uses: actions/setup-go@v2
       with:
@@ -34,7 +37,7 @@ jobs:
     - name: Install talosctl
       run: |
         mkdir -p $HOME/bin
-        wget -qO $HOME/bin/talosctl https://github.com/siderolabs/talos/releases/download/v${{ matrix.talos-version }}/talosctl-linux-amd64
+        wget -qO $HOME/bin/talosctl https://github.com/siderolabs/talos/releases/download/v${{ matrix.version.talos }}/talosctl-linux-amd64
         chmod +x $HOME/bin/talosctl
         echo "$HOME/bin" >> $GITHUB_PATH
     - name: Build sources
@@ -43,5 +46,5 @@ jobs:
       run: go test -v $(go list ./... | grep e2etests) -timeout 60m
       env:
         HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-        TALOS_VERSION: ${{ matrix.talos-version }}
-        KUBERNETES_VERSION: ${{ matrix.kubernetes-version }}
+        TALOS_VERSION: ${{ matrix.version.talos }}
+        KUBERNETES_VERSION: ${{ matrix.version.kubernetes }}
