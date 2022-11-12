@@ -1,15 +1,10 @@
 .PHONY: *
 
 test:
-	go test -v -timeout 60m ./...
+	go test -v $(go list ./... | grep -v e2etests)
 
-test-watch:
-	watch -n1 go test -v -timeout 60m ./...
-
-test-cover:
-	go test -coverprofile=coverage.out ./...
-	go tool cover -func=coverage.out
-	go tool cover -html=coverage.out
+test-e2e:
+	go test -v $(go list ./... | grep e2etests) -timeout 60m
 
 build:
 	goreleaser release --rm-dist --skip-publish --snapshot
