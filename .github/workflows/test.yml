@@ -28,8 +28,6 @@ jobs:
       run: go test -v $(go list ./... | grep -v e2etests)
   test-e2e:
     runs-on: ubuntu-latest
-    concurrency:
-      group: test-e2e
     strategy:
       matrix:
         talos-version: [1.1.2, 1.2.6]
