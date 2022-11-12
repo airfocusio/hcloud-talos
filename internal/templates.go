@@ -127,7 +127,7 @@ func nodeName(cl *cluster.Cluster, name string) string {
 	return cl.Config.ClusterName + "-" + name
 }
 
-func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name string) (clients.HcloudServerCreateFromImageOpts, error) {
+func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name string, talosVersion string) (clients.HcloudServerCreateFromImageOpts, error) {
 	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "controlplane.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
@@ -138,11 +138,11 @@ func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name strin
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: map[string]string{roleLabel: "controlplane"},
-		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  "https://github.com/siderolabs/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
 	}, nil
 }
 
-func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, name string) (clients.HcloudServerCreateFromImageOpts, error) {
+func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, name string, talosVersion string) (clients.HcloudServerCreateFromImageOpts, error) {
 	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "worker.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
@@ -157,6 +157,6 @@ func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, nam
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: finalizeLabels,
-		ImageTarXzUrl:  "https://github.com/talos-systems/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  "https://github.com/siderolabs/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
 	}, nil
 }

@@ -12,6 +12,7 @@ var (
 	reconcilePoolCmdNodeNamePrefix string
 	reconcilePoolCmdNodeCount      int
 	reconcilePoolCmdForce          bool
+	reconcilePoolCmdTalosVersion   string
 	reconcilePoolCmd               = &cobra.Command{
 		Use:   "reconcile-pool [pool-name]",
 		Short: "Reconcile pool",
@@ -25,6 +26,7 @@ var (
 				ServerType:     reconcilePoolCmdServerType,
 				Force:          reconcilePoolCmdForce,
 				PoolName:       args[0],
+				TalosVersion:   reconcilePoolCmdTalosVersion,
 			})
 			return err
 		},
@@ -37,4 +39,5 @@ func init() {
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdServerType, "server-type", "cx21", "")
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdNodeNamePrefix, "node-name-prefix", "worker", "")
 	reconcilePoolCmd.Flags().IntVar(&reconcilePoolCmdNodeCount, "node-count", 1, "")
+	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdTalosVersion, "talos-version", "", "")
 }

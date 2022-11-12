@@ -15,6 +15,7 @@ type AddNodeOpts struct {
 	Controlplane bool
 	NodeName     string
 	PoolName     string
+	TalosVersion string
 }
 
 func AddNode(logger *utils.Logger, dir string, opts AddNodeOpts) (*hcloud.Server, error) {
@@ -30,6 +31,9 @@ func AddNode(logger *utils.Logger, dir string, opts AddNodeOpts) (*hcloud.Server
 	if opts.ServerType == "" {
 		return nil, fmt.Errorf("node server type must not be empty")
 	}
+	if opts.TalosVersion == "" {
+		return nil, fmt.Errorf("talos version must not be empty")
+	}
 
 	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), false)
 	if err != nil {
@@ -43,12 +47,12 @@ func AddNode(logger *utils.Logger, dir string, opts AddNodeOpts) (*hcloud.Server
 
 	var nodeTemplate clients.HcloudServerCreateFromImageOpts
 	if opts.Controlplane {
-		nodeTemplate, err = controlplaneNodeTemplate(cl, opts.ServerType, opts.NodeName)
+		nodeTemplate, err = controlplaneNodeTemplate(cl, opts.ServerType, opts.NodeName, opts.TalosVersion)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		nodeTemplate, err = workerNodeTemplate(cl, opts.ServerType, opts.PoolName, opts.NodeName)
+		nodeTemplate, err = workerNodeTemplate(cl, opts.ServerType, opts.PoolName, opts.NodeName, opts.TalosVersion)
 		if err != nil {
 			return nil, err
 		}

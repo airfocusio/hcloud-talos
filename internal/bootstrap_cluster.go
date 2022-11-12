@@ -20,6 +20,8 @@ type BootstrapClusterOpts struct {
 	NoTalosKubespan                bool
 	NoHcloudCloudControllerManager bool
 	NoHcloudCsiDriver              bool
+	TalosVersion                   string
+	KubernetesVersion              string
 }
 
 func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpts) error {
@@ -51,6 +53,12 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 	if opts.Token == "" {
 		return fmt.Errorf("token must not be empty")
 	}
+	if opts.TalosVersion == "" {
+		return fmt.Errorf("talos version must not be empty")
+	}
+	if opts.KubernetesVersion == "" {
+		return fmt.Errorf("kubernetes version must not be empty")
+	}
 
 	network, err := clients.HcloudEnsureNetwork(cl, nodeNetworkTemplate(cl), true)
 	if err != nil {
@@ -74,12 +82,12 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 		}
 	}
 
-	_, err = TalosGenConfig(cl, network, opts.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, !opts.NoTalosKubespan)
+	_, err = TalosGenConfig(cl, network, opts.ClusterName, controlplaneLoadBalancer.PublicNet.IPv4.IP, opts.KubernetesVersion, !opts.NoTalosKubespan)
 	if err != nil {
 		return err
 	}
 
-	controlplaneNodeTemplate, err := controlplaneNodeTemplate(cl, opts.ServerType, opts.NodeName)
+	controlplaneNodeTemplate, err := controlplaneNodeTemplate(cl, opts.ServerType, opts.NodeName, opts.TalosVersion)
 	if err != nil {
 		return err
 	}
