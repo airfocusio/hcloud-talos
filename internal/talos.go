@@ -17,6 +17,15 @@ import (
 
 var TalosctlBin = "talosctl"
 
+func TalosClientVersion() (string, error) {
+	output, err := talosctlCmdRaw(".", "version", "--client", "--short")
+	if err != nil {
+		return "", err
+	}
+	version := strings.Split(strings.Split(output, "\n")[1], " ")[1]
+	return version, nil
+}
+
 func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, kubernetesVersion string, withKubespan bool) (string, error) {
 	configPatch, err := utils.RenderTemplate(`
 		[

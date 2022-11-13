@@ -49,7 +49,7 @@ func KubernetesWaitPodRunning(cl *cluster.Cluster, namespace string, name string
 			return err
 		}
 		if pod.Status.Phase != v1.PodRunning {
-			return fmt.Errorf("pod not yet running: %v", pod)
+			return fmt.Errorf("pod not yet running")
 		}
 		return nil
 	})
