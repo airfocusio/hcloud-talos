@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
     - main
+concurrency:
+  group: test
 env:
   GO111MODULE: on
 jobs:
