@@ -1,0 +1,3 @@
+I tried to bootstrap a control-plane in our Hetzner project, I get the same issues as with the previous RC:
+        1. The Talos API is not even up since the server is in a re-booting loop , thus
+        2. The load-balancer will be unhealthy.
