@@ -3,6 +3,8 @@ package e2etests
 import (
 	"fmt"
 	"os"
+	"path"
+	"runtime"
 	"testing"
 
 	"github.com/airfocusio/hcloud-talos/internal"
@@ -18,6 +20,11 @@ var (
 
 const configFile = "hcloud-talos.yaml"
 
+var talosVersion string
+var talosctlUrl string
+var talosctlBin string
+var kubernetesVersion string
+
 func TestMain(t *testing.M) {
 	setup()
 	exitCode := t.Run()
@@ -26,7 +33,26 @@ func TestMain(t *testing.M) {
 }
 
 func setup() {
-	fmt.Printf("setup\n")
+	talosVersion = os.Getenv("TALOS_VERSION")
+	if talosVersion == "" {
+		talosVersion = "1.2.6"
+	}
+	talosctlUrl = fmt.Sprintf("https://github.com/siderolabs/talos/releases/download/v%s/talosctl-%s-%s", talosVersion, runtime.GOOS, runtime.GOARCH)
+	talosctlBin = path.Join(os.TempDir(), fmt.Sprintf("talosctl-%s", talosVersion))
+	PrepareBinaries(talosctlUrl, &RawBinariesUnpack{Name: talosctlBin})
+	internal.TalosctlBin = talosctlBin
+
+	version, err := internal.TalosClientVersion()
+	if err != nil {
+		fmt.Printf("unable to retrieve talos client version: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("talos client version %s\n", version)
+
+	kubernetesVersion = os.Getenv("KUBERNETES_VERSION")
+	if kubernetesVersion == "" {
+		kubernetesVersion = "1.25.3"
+	}
 
 	hcloudToken = os.Getenv("HCLOUD_TOKEN")
 	if hcloudToken == "" {

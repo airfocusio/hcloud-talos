@@ -16,8 +16,8 @@ func TestBootstrapCluster(t *testing.T) {
 		Location:          "nbg1",
 		NetworkZone:       "eu-central",
 		Token:             hcloudToken,
-		TalosVersion:      "1.2.6",
-		KubernetesVersion: "1.23.13",
+		TalosVersion:      talosVersion,
+		KubernetesVersion: kubernetesVersion,
 	})
 	assert.NoError(t, err)
 }

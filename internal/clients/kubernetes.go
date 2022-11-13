@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -149,26 +148,6 @@ func KubernetesCreateObject(kubeClientset kubernetes.Interface, restConfig rest.
 	restHelper := resource.NewHelper(restClient, mapping)
 	_, err = restHelper.Create(namespace, false, obj)
 	return err
-}
-
-func KubernetesPatchFlannelDaemonSet(cl *cluster.Cluster) error {
-	kubeClientset, _, err := KubernetesInit(cl)
-	if err != nil {
-		return err
-	}
-	_, err = kubeClientset.AppsV1().DaemonSets("kube-system").Patch(*cl.Ctx, "kube-flannel", types.JSONPatchType, []byte(`
-		[
-			{
-				"op": "add",
-				"path": "/spec/template/spec/containers/0/args/-",
-				"value": "--iface=eth1"
-			}
-		]
-	`), metav1.PatchOptions{})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func kubernetesNewRestClient(restConfig rest.Config, gv schema.GroupVersion) (rest.Interface, error) {

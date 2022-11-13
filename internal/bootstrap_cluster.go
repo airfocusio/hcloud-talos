@@ -34,7 +34,7 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 	if err != nil {
 		return err
 	}
-	logger.Info.Printf("Bootstrapping cluster %s\n", cl.Config.ClusterName)
+	logger.Info.Printf("Bootstrapping cluster %s (talos %s, kubernetes %s)\n", cl.Config.ClusterName, opts.TalosVersion, opts.KubernetesVersion)
 	if opts.ClusterName == "" {
 		return fmt.Errorf("cluster name must not be empty")
 	}
