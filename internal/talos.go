@@ -15,6 +15,8 @@ import (
 	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
+var TalosctlBin = "talosctl"
+
 func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName string, controlplaneIP net.IP, kubernetesVersion string, withKubespan bool) (string, error) {
 	configPatch, err := utils.RenderTemplate(`
 		[
@@ -67,11 +69,11 @@ func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName st
 	if withKubespan {
 		args = append(args, "--with-kubespan")
 	}
-	output1, err := talosCmdRaw(cl.Dir, args...)
+	output1, err := talosctlCmdRaw(cl.Dir, args...)
 	if err != nil {
 		return output1, err
 	}
-	output2, err := talosCmd(cl, "config", "endpoint", controlplaneIP.String())
+	output2, err := talosctlCmd(cl, "config", "endpoint", controlplaneIP.String())
 	if err != nil {
 		return output1 + output2, err
 	}
@@ -79,15 +81,15 @@ func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName st
 }
 
 func TalosBootstrap(cl *cluster.Cluster, serverIP net.IP) (string, error) {
-	return talosCmd(cl, "-n", serverIP.String(), "bootstrap")
+	return talosctlCmd(cl, "-n", serverIP.String(), "bootstrap")
 }
 
 func TalosKubeconfig(cl *cluster.Cluster, serverIP net.IP) (string, error) {
-	return talosCmd(cl, "-n", serverIP.String(), "kubeconfig", ".")
+	return talosctlCmd(cl, "-n", serverIP.String(), "kubeconfig", ".")
 }
 
 func TalosReset(cl *cluster.Cluster, serverIP net.IP) (string, error) {
-	return talosCmd(cl, "-n", serverIP.String(), "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
+	return talosctlCmd(cl, "-n", serverIP.String(), "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
 }
 
 func TalosPatchFlannelDaemonSet(cl *cluster.Cluster, jsonPatch string) error {
@@ -102,13 +104,13 @@ func TalosPatchFlannelDaemonSet(cl *cluster.Cluster, jsonPatch string) error {
 	return nil
 }
 
-func talosCmd(cl *cluster.Cluster, args ...string) (string, error) {
+func talosctlCmd(cl *cluster.Cluster, args ...string) (string, error) {
 	fullArgs := append([]string{"--talosconfig", "talosconfig"}, args...)
-	return talosCmdRaw(cl.Dir, fullArgs...)
+	return talosctlCmdRaw(cl.Dir, fullArgs...)
 }
 
-func talosCmdRaw(dir string, args ...string) (string, error) {
-	cmd := exec.Command("talosctl", args...)
+func talosctlCmdRaw(dir string, args ...string) (string, error) {
+	cmd := exec.Command(TalosctlBin, args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
