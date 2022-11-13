@@ -3,7 +3,6 @@ package e2etests
 import (
 	_ "embed"
 	"testing"
-	"time"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
@@ -38,5 +37,4 @@ func TestVolumes(t *testing.T) {
 	assert.NoError(t, err)
 	err = clientset.CoreV1().Namespaces().Delete(*cl.Ctx, "test", v1.DeleteOptions{})
 	assert.NoError(t, err)
-	time.Sleep(30 * time.Second)
 }
