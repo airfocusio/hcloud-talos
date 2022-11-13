@@ -33,7 +33,7 @@ func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) e
 		return err
 	}
 
-	hcloudCloudControllerManagerImage := "hetznercloud/hcloud-cloud-controller-manager:v1.9.1"
+	hcloudCloudControllerManagerImage := "hetznercloud/hcloud-cloud-controller-manager:v1.13.2"
 	hcloudCloudControllerManagerManifest, err := utils.RenderTemplate(hcloudCloudControllerManagerManifestTmpl, map[string]interface{}{
 		"Secret": map[string]interface{}{
 			"Token":   cl.Config.Hcloud.Token,

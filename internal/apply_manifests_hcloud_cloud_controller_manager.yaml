@@ -1,4 +1,4 @@
-# https://raw.githubusercontent.com/hetznercloud/hcloud-cloud-controller-manager/v1.12.1/deploy/ccm.yaml
+# https://github.com/hetznercloud/hcloud-cloud-controller-manager/releases/download/v1.13.2/ccm.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -34,8 +34,6 @@ spec:
     metadata:
       labels:
         app: hcloud-cloud-controller-manager
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
@@ -50,10 +48,8 @@ spec:
         # cloud controller manages should be able to run on masters
         - key: "node-role.kubernetes.io/master"
           effect: NoSchedule
-          operator: Exists
         - key: "node-role.kubernetes.io/control-plane"
           effect: NoSchedule
-          operator: Exists
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
       containers:
@@ -84,6 +80,7 @@ spec:
                 secretKeyRef:
                   name: hcloud
                   key: network
+      priorityClassName: system-cluster-critical
 ---
 apiVersion: v1
 kind: Secret
