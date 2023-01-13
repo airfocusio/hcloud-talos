@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - talos: 1.2.6
-            kubernetes: 1.23.13
-          - talos: 1.2.6
-            kubernetes: 1.24.7
-          - talos: 1.2.6
-            kubernetes: 1.25.3
+          - talos: 1.2.8
+            kubernetes: 1.23.15
+          - talos: 1.2.8
+            kubernetes: 1.24.9
+          - talos: 1.2.8
+            kubernetes: 1.25.5
     steps:
     - uses: actions/setup-go@v2
       with:
