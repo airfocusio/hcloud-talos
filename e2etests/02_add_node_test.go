@@ -12,7 +12,7 @@ func TestAddNode(t *testing.T) {
 		ConfigFile:   configFile,
 		ServerType:   "cx21",
 		NodeName:     "worker-01",
-		TalosVersion: "1.2.6",
+		TalosVersion: "1.2.8",
 	})
 	assert.NoError(t, err)
 }
