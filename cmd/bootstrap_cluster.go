@@ -15,6 +15,7 @@ var (
 	bootstrapClusterCmdNetworkZone                    string
 	bootstrapClusterCmdNoFirewall                     bool
 	bootstrapClusterCmdNoTalosKubespan                bool
+	bootstrapClusterCmdNoFlannel                      bool
 	bootstrapClusterCmdNoHcloudCloudControllerManager bool
 	bootstrapClusterCmdNoHcloudCsiDriver              bool
 	bootstrapClusterCmdTalosVersion                   string
@@ -35,6 +36,7 @@ var (
 				Token:                          os.Getenv("HCLOUD_TOKEN"),
 				NoFirewall:                     bootstrapClusterCmdNoFirewall,
 				NoTalosKubespan:                bootstrapClusterCmdNoTalosKubespan,
+				NoFlannel:                      bootstrapClusterCmdNoFlannel,
 				NoHcloudCloudControllerManager: bootstrapClusterCmdNoHcloudCloudControllerManager,
 				NoHcloudCsiDriver:              bootstrapClusterCmdNoHcloudCsiDriver,
 				TalosVersion:                   bootstrapClusterCmdTalosVersion,
@@ -52,6 +54,7 @@ func init() {
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdNetworkZone, "network-zone", "eu-central", "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoFirewall, "no-firewall", false, "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoTalosKubespan, "no-talos-kubespan", false, "")
+	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoFlannel, "no-flannel", false, "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdTalosVersion, "talos-version", "", "")

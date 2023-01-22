@@ -39,6 +39,13 @@ func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName st
 				}
 			},
 			{
+				"op": "replace",
+				"path": "/cluster/network/cni",
+				"value": {
+					"name": "none"
+				}
+			},
+			{
 				"op": "add",
 				"path": "/cluster/externalCloudProvider",
 				"value": {

@@ -8,6 +8,7 @@ import (
 
 var (
 	applyManifestsCmdConfigFile                     string
+	applyManifestsCmdNoFlannel                      bool
 	applyManifestsCmdNoHcloudCloudControllerManager bool
 	applyManifestsCmdNoHcloudCsiDriver              bool
 	applyManifestsCmd                               = &cobra.Command{
@@ -18,6 +19,7 @@ var (
 			logger := utils.NewLogger(verbose)
 			err := internal.ApplyManifests(&logger, dir, internal.ApplyManifestsOpts{
 				ConfigFile:                     applyManifestsCmdConfigFile,
+				NoFlannel:                      applyManifestsCmdNoFlannel,
 				NoHcloudCloudControllerManager: applyManifestsCmdNoHcloudCloudControllerManager,
 				NoHcloudCsiDriver:              applyManifestsCmdNoHcloudCsiDriver,
 			})
@@ -28,6 +30,7 @@ var (
 
 func init() {
 	applyManifestsCmd.Flags().StringVarP(&applyManifestsCmdConfigFile, "config", "c", defaultConfigFile, "")
+	applyManifestsCmd.Flags().BoolVar(&applyManifestsCmdNoFlannel, "no-flannel", false, "")
 	applyManifestsCmd.Flags().BoolVar(&applyManifestsCmdNoHcloudCloudControllerManager, "no-hcloud-cloud-controller-manager", false, "")
 	applyManifestsCmd.Flags().BoolVar(&applyManifestsCmdNoHcloudCsiDriver, "no-hcloud-csi-driver", false, "")
 }

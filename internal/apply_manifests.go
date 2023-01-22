@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	//go:embed apply_manifests_flannel.yaml
+	flannelManifestTmpl string
 	//go:embed apply_manifests_hcloud_secret.yaml
 	hcloudSecretManifestTmpl string
 	//go:embed apply_manifests_hcloud_cloud_controller_manager.yaml
@@ -19,6 +21,7 @@ var (
 
 type ApplyManifestsOpts struct {
 	ConfigFile                     string
+	NoFlannel                      bool
 	NoHcloudCloudControllerManager bool
 	NoHcloudCsiDriver              bool
 }
@@ -35,10 +38,18 @@ func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) e
 		return err
 	}
 
+	flannelManifest, err := utils.RenderTemplate(flannelManifestTmpl, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+
 	hcloudSecretManifest, err := utils.RenderTemplate(hcloudSecretManifestTmpl, map[string]interface{}{
 		"Token":   cl.Config.Hcloud.Token,
 		"Network": network.Name,
 	})
+	if err != nil {
+		return err
+	}
 
 	hcloudCloudControllerManagerManifest, err := utils.RenderTemplate(hcloudCloudControllerManagerManifestTmpl, map[string]interface{}{})
 	if err != nil {
@@ -51,7 +62,12 @@ func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) e
 	}
 
 	manifestsConcatenated := [][]byte{}
-	manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudSecretManifest))
+	if !opts.NoFlannel {
+		manifestsConcatenated = append(manifestsConcatenated, []byte(flannelManifest))
+	}
+	if !opts.NoHcloudCloudControllerManager && !opts.NoHcloudCsiDriver {
+		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudSecretManifest))
+	}
 	if !opts.NoHcloudCloudControllerManager {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCloudControllerManagerManifest))
 	}
