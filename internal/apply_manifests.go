@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	//go:embed apply_manifests_hcloud_secret.yaml
+	hcloudSecretManifestTmpl string
 	//go:embed apply_manifests_hcloud_cloud_controller_manager.yaml
 	hcloudCloudControllerManagerManifestTmpl string
 	//go:embed apply_manifests_hcloud_csi_driver.yaml
@@ -33,36 +35,23 @@ func ApplyManifests(logger *utils.Logger, dir string, opts ApplyManifestsOpts) e
 		return err
 	}
 
-	hcloudCloudControllerManagerImage := "hetznercloud/hcloud-cloud-controller-manager:v1.9.1"
-	hcloudCloudControllerManagerManifest, err := utils.RenderTemplate(hcloudCloudControllerManagerManifestTmpl, map[string]interface{}{
-		"Secret": map[string]interface{}{
-			"Token":   cl.Config.Hcloud.Token,
-			"Network": network.Name,
-		},
-		"CloudControllerManager": map[string]interface{}{
-			"Image":           hcloudCloudControllerManagerImage,
-			"ImagePullPolicy": "IfNotPresent",
-		},
+	hcloudSecretManifest, err := utils.RenderTemplate(hcloudSecretManifestTmpl, map[string]interface{}{
+		"Token":   cl.Config.Hcloud.Token,
+		"Network": network.Name,
 	})
+
+	hcloudCloudControllerManagerManifest, err := utils.RenderTemplate(hcloudCloudControllerManagerManifestTmpl, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	hcloudCsiDriverImage := "hetznercloud/hcloud-csi-driver:1.6.0"
-	hcloudCsiDriverManifest, err := utils.RenderTemplate(hcloudCsiDriverManifestTmpl, map[string]interface{}{
-		"Secret": map[string]interface{}{
-			"Token": cl.Config.Hcloud.Token,
-		},
-		"CsiDriver": map[string]interface{}{
-			"Image":           hcloudCsiDriverImage,
-			"ImagePullPolicy": "IfNotPresent",
-		},
-	})
+	hcloudCsiDriverManifest, err := utils.RenderTemplate(hcloudCsiDriverManifestTmpl, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
 	manifestsConcatenated := [][]byte{}
+	manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudSecretManifest))
 	if !opts.NoHcloudCloudControllerManager {
 		manifestsConcatenated = append(manifestsConcatenated, []byte(hcloudCloudControllerManagerManifest))
 	}
