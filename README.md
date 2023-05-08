@@ -21,9 +21,9 @@ cd my-cluster
 
 export HCLOUD_TOKEN=...
 # bootstrap cluster
-hcloud-talos -v bootstrap-cluster --talos-version=1.2.8 --kubernetes-version=1.25.5 my-cluster controlplane-1
+hcloud-talos -v bootstrap-cluster --talos-version=1.2.9 --kubernetes-version=1.25.5 my-cluster controlplane-1
 
 # add more nodes
-hcloud-talos -v add-node --talos-version=1.2.8 controlplane-2 --controlplane
-hcloud-talos -v add-node --talos-version=1.2.8 worker-1
+hcloud-talos -v add-node --talos-version=1.2.9 controlplane-2 --controlplane
+hcloud-talos -v add-node --talos-version=1.2.9 worker-1
 ```
