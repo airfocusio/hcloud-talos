@@ -12,7 +12,7 @@ func TestBootstrapCluster(t *testing.T) {
 		ConfigFile:        configFile,
 		ClusterName:       clusterName,
 		ServerType:        "cx21",
-		NodeName:          "controlplane-1",
+		NodeName:          "controlplane-%id%",
 		Location:          "nbg1",
 		NetworkZone:       "eu-central",
 		Token:             hcloudToken,

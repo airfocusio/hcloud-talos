@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
 	"github.com/airfocusio/hcloud-talos/internal/utils"
@@ -15,7 +14,6 @@ type ReconcilePoolOpts struct {
 	NodeNamePrefix string
 	NodeCount      int
 	ServerType     string
-	Force          bool
 	TalosVersion   string
 }
 
@@ -51,26 +49,13 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 
 		nodeCountDiff := len(poolServers) - opts.NodeCount
 		if nodeCountDiff < 0 {
-			nodeName, err := findNextNodeName(cl, opts.NodeNamePrefix, poolServers)
-			if err != nil {
-				return err
-			}
+			nodeName := opts.NodeNamePrefix + "-%id%"
 			_, err = AddNode(logger, cl.Dir, AddNodeOpts{
 				ConfigFile:   opts.ConfigFile,
 				ServerType:   opts.ServerType,
 				NodeName:     nodeName,
 				PoolName:     opts.PoolName,
 				TalosVersion: opts.TalosVersion,
-			})
-			if err != nil {
-				return err
-			}
-		} else if nodeCountDiff > 0 {
-			server := poolServers[len(poolServers)-1]
-			err := DeleteNode(logger, cl.Dir, DeleteNodeOpts{
-				ConfigFile: opts.ConfigFile,
-				NodeName:   strings.TrimPrefix(server.Name, cl.Config.ClusterName+"-"),
-				Force:      opts.Force,
 			})
 			if err != nil {
 				return err
@@ -82,21 +67,4 @@ func ReconcilePool(logger *utils.Logger, dir string, opts ReconcilePoolOpts) err
 	}
 
 	return nil
-}
-
-func findNextNodeName(cl *cluster.Cluster, nodeNamePrefix string, poolServers []*hcloud.Server) (string, error) {
-	for i := 1; i <= 1000; i++ {
-		exists := false
-		proposedNodeName := fmt.Sprintf("%s-%d", nodeNamePrefix, i)
-		for _, server := range poolServers {
-			if server.Name == nodeName(cl, proposedNodeName) {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			return proposedNodeName, nil
-		}
-	}
-	return "", fmt.Errorf("unable to find next node name")
 }

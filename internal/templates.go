@@ -4,9 +4,11 @@ import (
 	"io/ioutil"
 	"net"
 	"path"
+	"strings"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
+	"github.com/airfocusio/hcloud-talos/internal/utils"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -34,9 +36,9 @@ func nodeNetworkTemplate(cl *cluster.Cluster) hcloud.NetworkCreateOpts {
 	}
 }
 
-func nodePlacementGroupTemplate(cl *cluster.Cluster) hcloud.PlacementGroupCreateOpts {
+func controlplanePlacementGroupTemplate(cl *cluster.Cluster) hcloud.PlacementGroupCreateOpts {
 	return hcloud.PlacementGroupCreateOpts{
-		Name:   cl.Config.ClusterName + "-nodes",
+		Name:   cl.Config.ClusterName + "-controlplanes",
 		Type:   hcloud.PlacementGroupTypeSpread,
 		Labels: map[string]string{clusterLabel: cl.Config.ClusterName},
 	}
@@ -124,7 +126,7 @@ func nodeFirewallTemplate(cl *cluster.Cluster, network *hcloud.Network) hcloud.F
 }
 
 func nodeName(cl *cluster.Cluster, name string) string {
-	return cl.Config.ClusterName + "-" + name
+	return cl.Config.ClusterName + "-" + strings.Replace(name, "%id%", utils.RandString(6), 1)
 }
 
 func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name string, talosVersion string) (clients.HcloudServerCreateFromImageOpts, error) {

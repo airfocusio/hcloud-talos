@@ -40,9 +40,13 @@ func AddNode(logger *utils.Logger, dir string, opts AddNodeOpts) (*hcloud.Server
 		return nil, err
 	}
 
-	placementGroup, err := clients.HcloudEnsurePlacementGroup(cl, nodePlacementGroupTemplate(cl), false)
-	if err != nil {
-		return nil, err
+	var placementGroup *hcloud.PlacementGroup
+	if opts.Controlplane {
+		controlplanePlacementGroup, err := clients.HcloudEnsurePlacementGroup(cl, controlplanePlacementGroupTemplate(cl), false)
+		if err != nil {
+			return nil, err
+		}
+		placementGroup = controlplanePlacementGroup
 	}
 
 	var nodeTemplate clients.HcloudServerCreateFromImageOpts

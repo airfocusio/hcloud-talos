@@ -6,7 +6,7 @@ import (
 )
 
 var randStringInitialized = false
-var randStringRunes = []rune("0123456789abcdef")
+var randStringRunes = []rune("0123456789abcdefghijklmnopqrstuvwxyz")
 
 func RandString(n int) string {
 	if !randStringInitialized {

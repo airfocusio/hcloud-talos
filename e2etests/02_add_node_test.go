@@ -11,7 +11,7 @@ func TestAddNode(t *testing.T) {
 	_, err := internal.AddNode(&logger, clusterDir, internal.AddNodeOpts{
 		ConfigFile:   configFile,
 		ServerType:   "cx21",
-		NodeName:     "worker-1",
+		NodeName:     "worker",
 		TalosVersion: talosVersion,
 	})
 	assert.NoError(t, err)
