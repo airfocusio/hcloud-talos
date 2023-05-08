@@ -36,9 +36,9 @@ func nodeNetworkTemplate(cl *cluster.Cluster) hcloud.NetworkCreateOpts {
 	}
 }
 
-func nodePlacementGroupTemplate(cl *cluster.Cluster) hcloud.PlacementGroupCreateOpts {
+func controlplanePlacementGroupTemplate(cl *cluster.Cluster) hcloud.PlacementGroupCreateOpts {
 	return hcloud.PlacementGroupCreateOpts{
-		Name:   cl.Config.ClusterName + "-nodes",
+		Name:   cl.Config.ClusterName + "-controlplanes",
 		Type:   hcloud.PlacementGroupTypeSpread,
 		Labels: map[string]string{clusterLabel: cl.Config.ClusterName},
 	}

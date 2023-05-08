@@ -65,7 +65,7 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 		return err
 	}
 
-	placementGroup, err := clients.HcloudEnsurePlacementGroup(cl, nodePlacementGroupTemplate(cl), true)
+	controlplanePlacementGroup, err := clients.HcloudEnsurePlacementGroup(cl, controlplanePlacementGroupTemplate(cl), true)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func BootstrapCluster(logger *utils.Logger, dir string, opts BootstrapClusterOpt
 	if err != nil {
 		return err
 	}
-	controlplaneServer, err := clients.HcloudCreateServerFromImage(cl, network, placementGroup, controlplaneNodeTemplate)
+	controlplaneServer, err := clients.HcloudCreateServerFromImage(cl, network, controlplanePlacementGroup, controlplaneNodeTemplate)
 	if err != nil {
 		return err
 	}
