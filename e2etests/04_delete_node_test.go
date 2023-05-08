@@ -10,7 +10,7 @@ import (
 func TestDeleteNode(t *testing.T) {
 	err := internal.DeleteNode(&logger, clusterDir, internal.DeleteNodeOpts{
 		ConfigFile: configFile,
-		NodeName:   "worker-01",
+		NodeName:   "worker-1",
 		Force:      true,
 	})
 	assert.NoError(t, err)
