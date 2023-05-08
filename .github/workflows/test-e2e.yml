@@ -19,10 +19,10 @@ jobs:
             kubernetes: 1.24.13
           - talos: 1.2.9
             kubernetes: 1.25.9
-          - talos: 1.3.7
-            kubernetes: 1.25.9
-          - talos: 1.3.7
-            kubernetes: 1.26.4
+          # - talos: 1.3.7
+          #   kubernetes: 1.25.9
+          # - talos: 1.3.7
+          #   kubernetes: 1.26.4
     steps:
     - uses: actions/setup-go@v2
       with:

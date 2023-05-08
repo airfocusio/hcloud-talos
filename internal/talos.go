@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"net"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/airfocusio/hcloud-talos/internal/clients"
 	"github.com/airfocusio/hcloud-talos/internal/cluster"
@@ -98,7 +100,7 @@ func TalosKubeconfig(cl *cluster.Cluster, serverIP net.IP) (string, error) {
 }
 
 func TalosReset(cl *cluster.Cluster, serverIP net.IP) (string, error) {
-	return talosctlCmd(cl, "-n", serverIP.String(), "reset", "--system-labels-to-wipe", "STATE", "--system-labels-to-wipe", "EPHEMERAL")
+	return talosctlCmd(cl, "-n", serverIP.String(), "reset")
 }
 
 func TalosPatchFlannelDaemonSet(cl *cluster.Cluster, jsonPatch string) error {
@@ -115,15 +117,21 @@ func TalosPatchFlannelDaemonSet(cl *cluster.Cluster, jsonPatch string) error {
 
 func talosctlCmd(cl *cluster.Cluster, args ...string) (string, error) {
 	fullArgs := append([]string{"--talosconfig", "talosconfig"}, args...)
-	return talosctlCmdRaw(cl.Dir, fullArgs...)
+	output, err := talosctlCmdRaw(cl.Dir, fullArgs...)
+	if err != nil {
+		return "", err
+	}
+	return output, nil
 }
 
 func talosctlCmdRaw(dir string, args ...string) (string, error) {
-	cmd := exec.Command(TalosctlBin, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, TalosctlBin, args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("talos command %s failed: %w\n%s", strings.Join(args, " "), err, output)
+		return string(output), fmt.Errorf("talos command %s failed: %w\n%s", strings.Join(args, " "), err, output)
 	}
 	return string(output), nil
 }
