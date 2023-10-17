@@ -35,7 +35,7 @@ func TestMain(t *testing.M) {
 func setup() {
 	talosVersion = os.Getenv("TALOS_VERSION")
 	if talosVersion == "" {
-		talosVersion = "1.2.9"
+		talosVersion = "1.5.3"
 	}
 	talosctlUrl = fmt.Sprintf("https://github.com/siderolabs/talos/releases/download/v%s/talosctl-%s-%s", talosVersion, runtime.GOOS, runtime.GOARCH)
 	talosctlBin = path.Join(os.TempDir(), fmt.Sprintf("talosctl-%s", talosVersion))
@@ -51,7 +51,7 @@ func setup() {
 
 	kubernetesVersion = os.Getenv("KUBERNETES_VERSION")
 	if kubernetesVersion == "" {
-		kubernetesVersion = "1.25.9"
+		kubernetesVersion = "1.28.2"
 	}
 
 	hcloudToken = os.Getenv("HCLOUD_TOKEN")
