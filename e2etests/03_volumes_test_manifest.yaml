@@ -22,7 +22,7 @@ spec:
       terminationGracePeriodSeconds: 1
       containers:
         - name: test
-          image: alpine:3.15
+          image: alpine:3.18
           command:
             - sh
           args:
@@ -34,6 +34,16 @@ spec:
           volumeMounts:
             - name: test
               mountPath: /test
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
   volumeClaimTemplates:
     - metadata:
         name: test

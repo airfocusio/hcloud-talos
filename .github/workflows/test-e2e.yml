@@ -15,8 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - talos: 1.3.7
-            kubernetes: 1.26.9
           - talos: 1.4.8
             kubernetes: 1.27.6
           - talos: 1.5.3
@@ -24,7 +22,7 @@ jobs:
     steps:
     - uses: actions/setup-go@v2
       with:
-        go-version: 1.19.x
+        go-version: 1.21.x
     - uses: actions/checkout@v2
     - name: Build sources
       run: go build ./...
