@@ -47,7 +47,7 @@ var (
 
 func init() {
 	bootstrapClusterCmd.Flags().StringVarP(&bootstrapClusterCmdConfigFile, "config", "c", defaultConfigFile, "")
-	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdServerType, "server-type", "cx21", "")
+	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdServerType, "server-type", "cx22", "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdLocation, "location", "nbg1", "")
 	bootstrapClusterCmd.Flags().StringVar(&bootstrapClusterCmdNetworkZone, "network-zone", "eu-central", "")
 	bootstrapClusterCmd.Flags().BoolVar(&bootstrapClusterCmdNoFirewall, "no-firewall", false, "")

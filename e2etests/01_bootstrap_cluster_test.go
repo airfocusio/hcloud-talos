@@ -11,7 +11,7 @@ func TestBootstrapCluster(t *testing.T) {
 	err := internal.BootstrapCluster(&logger, clusterDir, internal.BootstrapClusterOpts{
 		ConfigFile:        configFile,
 		ClusterName:       clusterName,
-		ServerType:        "cx21",
+		ServerType:        "cx22",
 		NodeName:          "controlplane-%id%",
 		Location:          "nbg1",
 		NetworkZone:       "eu-central",

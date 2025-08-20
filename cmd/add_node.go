@@ -34,7 +34,7 @@ var (
 func init() {
 	addNodeCmd.Flags().StringVarP(&addNodeCmdConfigFile, "config", "c", defaultConfigFile, "")
 	addNodeCmd.Flags().BoolVar(&addNodeCmdControlplane, "controlplane", false, "")
-	addNodeCmd.Flags().StringVar(&addNodeCmdServerType, "server-type", "cx21", "")
+	addNodeCmd.Flags().StringVar(&addNodeCmdServerType, "server-type", "cx22", "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdPoolName, "pool-name", "", "")
 	addNodeCmd.Flags().StringVar(&addNodeCmdTalosVersion, "talos-version", "", "")
 }

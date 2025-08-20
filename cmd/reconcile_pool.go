@@ -33,7 +33,7 @@ var (
 
 func init() {
 	reconcilePoolCmd.Flags().StringVarP(&reconcilePoolCmdConfigFile, "config", "c", defaultConfigFile, "")
-	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdServerType, "server-type", "cx21", "")
+	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdServerType, "server-type", "cx22", "")
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdNodeNamePrefix, "node-name-prefix", "worker", "")
 	reconcilePoolCmd.Flags().IntVar(&reconcilePoolCmdNodeCount, "node-count", 1, "")
 	reconcilePoolCmd.Flags().StringVar(&reconcilePoolCmdTalosVersion, "talos-version", "", "")

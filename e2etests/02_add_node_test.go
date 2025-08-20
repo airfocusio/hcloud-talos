@@ -10,7 +10,7 @@ import (
 func TestAddNode(t *testing.T) {
 	_, err := internal.AddNode(&logger, clusterDir, internal.AddNodeOpts{
 		ConfigFile:   configFile,
-		ServerType:   "cx21",
+		ServerType:   "cx22",
 		NodeName:     "worker",
 		TalosVersion: talosVersion,
 	})
