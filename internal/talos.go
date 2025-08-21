@@ -76,6 +76,8 @@ func TalosGenConfig(cl *cluster.Cluster, network *hcloud.Network, clusterName st
 		"--additional-sans", controlplaneIP.String(),
 		"--config-patch", configPatch,
 		"--kubernetes-version", kubernetesVersion,
+		"--with-examples=false",
+		"--with-docs=false",
 	}
 	if withKubespan {
 		args = append(args, "--with-kubespan")

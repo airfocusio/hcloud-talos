@@ -11,14 +11,16 @@ jobs:
   test-e2e:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 3
       fail-fast: false
       matrix:
         version:
-          - talos: 1.4.8
-            kubernetes: 1.27.6
-          - talos: 1.5.3
-            kubernetes: 1.28.2
+          - talos: 1.8.4
+            kubernetes: 1.31.12
+          - talos: 1.9.6
+            kubernetes: 1.32.8
+          - talos: 1.10.6
+            kubernetes: 1.33.4
     steps:
     - uses: actions/setup-go@v4
       with:

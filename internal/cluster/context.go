@@ -3,7 +3,6 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -29,7 +28,7 @@ func (cl *Cluster) Create(logger *utils.Logger, clusterName string, hcloudLocati
 	if err != nil {
 		return err
 	}
-	files, err := ioutil.ReadDir(cl.Dir)
+	files, err := os.ReadDir(cl.Dir)
 	if err != nil {
 		return err
 	} else if len(files) > 0 {
@@ -51,7 +50,7 @@ func (cl *Cluster) Load(configFile string, logger *utils.Logger) error {
 	cl.Ctx = &ctx
 	cl.Logger = logger
 
-	yamlBytes, err := ioutil.ReadFile(path.Join(cl.Dir, configFile))
+	yamlBytes, err := os.ReadFile(path.Join(cl.Dir, configFile))
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (cl Cluster) Save(configFile string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(cl.Dir, configFile), yamlBytes, 0o664)
+	err = os.WriteFile(path.Join(cl.Dir, configFile), yamlBytes, 0o664)
 	if err != nil {
 		return err
 	}
