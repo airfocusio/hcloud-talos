@@ -1,8 +1,8 @@
 module github.com/airfocusio/hcloud-talos
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.6
+toolchain go1.23.6
 
 require (
 	github.com/hetznercloud/hcloud-go v1.59.1
