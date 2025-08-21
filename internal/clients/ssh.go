@@ -5,8 +5,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"fmt"
 	"net"
+	"os"
 	"strconv"
 
 	"golang.org/x/crypto/ssh"
@@ -36,7 +37,7 @@ func (k *SSHKeyPrivate) Load(str string) error {
 }
 
 func (k *SSHKeyPrivate) LoadFile(file string) error {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}
@@ -64,7 +65,7 @@ func (k *SSHKeyPrivate) Store() string {
 
 func (k *SSHKeyPrivate) StoreFile(file string) error {
 	str := k.Store()
-	return ioutil.WriteFile(file, []byte(str), 0o600)
+	return os.WriteFile(file, []byte(str), 0o600)
 }
 
 func (k *SSHKeyPrivate) Execute(host string, port int, cmd string) (string, error) {
@@ -92,7 +93,7 @@ func (k *SSHKeyPrivate) Execute(host string, port int, cmd string) (string, erro
 
 	output, err := session.CombinedOutput(cmd)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%w\n%s\n", err, string(output))
 	}
 
 	return string(output), nil

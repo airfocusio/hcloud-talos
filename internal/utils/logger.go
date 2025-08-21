@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 )
@@ -14,7 +14,7 @@ type Logger struct {
 }
 
 func NewLogger(withDebug bool) Logger {
-	debugWriter := ioutil.Discard
+	debugWriter := io.Discard
 	if withDebug {
 		debugWriter = os.Stderr
 	}

@@ -266,6 +266,7 @@ func HcloudCreateServerFromImage(cl *cluster.Cluster, network *hcloud.Network, p
 		return err
 	})
 	if err != nil {
+		cl.Logger.Error.Printf("Applying image failed: %v\n", err)
 		return nil, err
 	}
 

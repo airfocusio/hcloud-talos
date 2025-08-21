@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"io/ioutil"
+	"fmt"
 	"net"
+	"os"
 	"path"
 	"strings"
 
@@ -130,7 +131,7 @@ func nodeName(cl *cluster.Cluster, name string) string {
 }
 
 func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name string, talosVersion string) (clients.HcloudServerCreateFromImageOpts, error) {
-	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "controlplane.yaml"))
+	userData, err := os.ReadFile(path.Join(cl.Dir, "controlplane.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
 	}
@@ -140,12 +141,12 @@ func controlplaneNodeTemplate(cl *cluster.Cluster, serverType string, name strin
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: map[string]string{roleLabel: "controlplane"},
-		ImageTarXzUrl:  "https://github.com/siderolabs/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  fmt.Sprintf("https://factory.talos.dev/image/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba/v%s/hcloud-amd64.raw.xz", talosVersion),
 	}, nil
 }
 
 func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, name string, talosVersion string) (clients.HcloudServerCreateFromImageOpts, error) {
-	userData, err := ioutil.ReadFile(path.Join(cl.Dir, "worker.yaml"))
+	userData, err := os.ReadFile(path.Join(cl.Dir, "worker.yaml"))
 	if err != nil {
 		return clients.HcloudServerCreateFromImageOpts{}, err
 	}
@@ -159,6 +160,6 @@ func workerNodeTemplate(cl *cluster.Cluster, serverType string, pool string, nam
 		UserData:       string(userData),
 		BaseLabels:     map[string]string{clusterLabel: cl.Config.ClusterName},
 		FinalizeLabels: finalizeLabels,
-		ImageTarXzUrl:  "https://github.com/siderolabs/talos/releases/download/v" + talosVersion + "/hcloud-amd64.raw.xz",
+		ImageTarXzUrl:  fmt.Sprintf("https://factory.talos.dev/image/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba/v%s/hcloud-amd64.raw.xz", talosVersion),
 	}, nil
 }
