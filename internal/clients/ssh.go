@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -79,6 +80,7 @@ func (k *SSHKeyPrivate) Execute(host string, port int, cmd string) (string, erro
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
+		Timeout: time.Second * 10,
 	}
 
 	client, err := ssh.Dial("tcp", net.JoinHostPort(host, strconv.Itoa(port)), &config)
